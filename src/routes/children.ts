@@ -38,7 +38,7 @@ childrenRoutes.get('/', async (c) => {
     return c.json<ApiResponse<Child[]>>({
       success: true,
       data: []
-    }, 500)
+    })
   }
 })
 
