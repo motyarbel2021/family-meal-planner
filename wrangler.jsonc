@@ -1,15 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "meal-planner",
+  "name": "family-meal-planner",
   "compatibility_date": "2025-08-30",
   "pages_build_output_dir": "./dist",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "meal-planner-db",
+      "database_name": "family-meal-planner-db",
       "database_id": "local-dev"
     }
   ]
