@@ -162,6 +162,11 @@ export const renderer = jsxRenderer(({ children }) => {
             scroll-behavior: smooth;
           }
           
+          .writing-mode-vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+          }
+          
           @keyframes bounce {
             0%, 20%, 53%, 80%, 100% {
               transform: translateY(0);

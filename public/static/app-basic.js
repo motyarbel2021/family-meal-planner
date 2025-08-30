@@ -157,54 +157,56 @@ function initWeekTable() {
       </tr>
     `
   } else {
-    // For each meal type, create rows for all children
+    // Create table exactly like the image: merged cells for meal types
     const mealTypes = [
-      { name: 'בוקר', icon: 'fas fa-coffee', color: 'bg-yellow-50 border-yellow-200' },
-      { name: 'צהריים', icon: 'fas fa-sun', color: 'bg-orange-50 border-orange-200' },
-      { name: 'ערב', icon: 'fas fa-moon', color: 'bg-blue-50 border-blue-200' }
+      { name: 'בוקר', displayName: 'ארוחת בוקר', icon: 'fas fa-coffee', color: 'bg-yellow-50' },
+      { name: 'צהריים', displayName: 'ארוחת צהריים', icon: 'fas fa-sun', color: 'bg-orange-50' },
+      { name: 'ערב', displayName: 'ארוחת ערב', icon: 'fas fa-moon', color: 'bg-blue-50' }
     ]
     
-    mealTypes.forEach(meal => {
-      // Meal type header row
-      tableHTML += `
-        <tr class="${meal.color} border-t-2">
-          <td class="border border-gray-200 p-2 font-bold text-center ${meal.color}" rowspan="${children.length}">
-            <div class="writing-mode-vertical transform rotate-180 flex flex-col items-center justify-center h-full min-h-[120px]">
-              <i class="${meal.icon} text-lg mb-2"></i>
-              <span class="text-sm font-medium">ארוחת ${meal.name}</span>
-            </div>
-          </td>
-          <td class="border border-gray-200 p-2 bg-gray-100 font-medium min-w-[100px]">
-            ${children[0].name}
-          </td>
-          ${days.map(day => `
-            <td class="border border-gray-200 p-2 min-w-[120px]" id="cell-${day}-${meal.name}-${children[0].id}">
-              <button onclick="addMealForChild('${day}', '${meal.name}', '${children[0].id}', '${children[0].name}')" 
-                      class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs">
-                <i class="fas fa-plus"></i>
-              </button>
-            </td>
-          `).join('')}
-        </tr>
-      `
-      
-      // Additional rows for other children in this meal type
-      children.slice(1).forEach(child => {
-        tableHTML += `
-          <tr>
-            <td class="border border-gray-200 p-2 bg-gray-100 font-medium">
-              ${child.name}
-            </td>
-            ${days.map(day => `
-              <td class="border border-gray-200 p-2" id="cell-${day}-${meal.name}-${child.id}">
-                <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
-                        class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs">
-                  <i class="fas fa-plus"></i>
-                </button>
+    mealTypes.forEach((meal, mealIndex) => {
+      children.forEach((child, childIndex) => {
+        if (childIndex === 0) {
+          // First row for each meal type - includes merged cell
+          tableHTML += `
+            <tr class="border-t-2 border-gray-300">
+              <td class="border border-gray-200 p-3 font-bold text-center ${meal.color} align-middle" rowspan="${children.length}">
+                <div class="flex flex-col items-center justify-center">
+                  <i class="${meal.icon} text-xl mb-2 text-gray-700"></i>
+                  <span class="text-sm font-medium text-gray-800 writing-mode-vertical whitespace-nowrap">${meal.displayName}</span>
+                </div>
               </td>
-            `).join('')}
-          </tr>
-        `
+              <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center min-w-[80px]">
+                ${child.name}
+              </td>
+              ${days.map(day => `
+                <td class="border border-gray-200 p-1 min-w-[100px] h-12" id="cell-${day}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+                          class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </td>
+              `).join('')}
+            </tr>
+          `
+        } else {
+          // Subsequent rows for other children in same meal type
+          tableHTML += `
+            <tr>
+              <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center">
+                ${child.name}
+              </td>
+              ${days.map(day => `
+                <td class="border border-gray-200 p-1 h-12" id="cell-${day}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+                          class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </td>
+              `).join('')}
+            </tr>
+          `
+        }
       })
     })
   }
@@ -581,17 +583,17 @@ function updateMealCellForChild(day, mealTime, childId) {
   if (!cell) return
   
   if (mealData) {
-    // Show the meal with preference indicator
+    // Show the meal in a compact format suitable for table cells
     cell.innerHTML = `
-      <div class="bg-blue-100 border border-blue-200 rounded p-2 text-center">
-        <div class="font-medium text-blue-800 text-sm">${mealData.mealName}</div>
+      <div class="bg-blue-100 border border-blue-200 rounded p-1 text-center h-full flex flex-col justify-center relative group">
+        <div class="font-medium text-blue-800 text-xs leading-tight">${mealData.mealName}</div>
         ${mealData.isPreferred ? 
-          '<div class="text-xs text-green-600 mt-1">❤️ אוהב</div>' : 
-          '<div class="text-xs text-gray-500 mt-1">🤷‍♂️ לא ידוע</div>'
+          '<div class="text-xs text-green-600 mt-1">❤️</div>' : 
+          '<div class="text-xs text-gray-500 mt-1">🤷‍♂️</div>'
         }
         <button onclick="removeMealForChild('${day}', '${mealTime}', '${childId}')" 
-                class="text-red-500 hover:text-red-700 text-xs mt-1 block mx-auto">
-          <i class="fas fa-times"></i>
+                class="absolute top-0 right-0 text-red-500 hover:text-red-700 text-xs opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full w-4 h-4 flex items-center justify-center -mt-1 -mr-1">
+          <i class="fas fa-times text-xs"></i>
         </button>
       </div>
     `
@@ -600,7 +602,7 @@ function updateMealCellForChild(day, mealTime, childId) {
     const child = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]').find(c => c.id === childId)
     cell.innerHTML = `
       <button onclick="addMealForChild('${day}', '${mealTime}', '${childId}', '${child?.name || ''}')" 
-              class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs">
+              class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
         <i class="fas fa-plus"></i>
       </button>
     `
