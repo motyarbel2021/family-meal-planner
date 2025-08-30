@@ -59,18 +59,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
       <!-- Weekly Planner -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-bold mb-4 text-center">
-          <i class="fas fa-calendar-week mr-2"></i>
-          תכנון שבועי
-        </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse border border-gray-200">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">
+            <i class="fas fa-calendar-week mr-2"></i>
+            תכנון שבועי
+          </h2>
+          <div id="week-summary" class="text-sm text-gray-600">
+            <!-- Week summary will be updated by JavaScript -->
+          </div>
+        </div>
+        <div class="overflow-x-auto bg-white rounded-lg shadow-sm border">
+          <table class="w-full border-collapse">
             <thead>
-              <tr class="bg-gray-50">
-                <th class="border border-gray-200 p-3 font-medium">יום</th>
-                <th class="border border-gray-200 p-3 font-medium">ארוחת בוקר</th>
-                <th class="border border-gray-200 p-3 font-medium">ארוחת צהריים</th>
-                <th class="border border-gray-200 p-3 font-medium">ארוחת ערב</th>
+              <tr class="bg-gradient-to-l from-blue-50 to-blue-100">
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 w-20">יום</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800">
+                  <i class="fas fa-coffee mr-1"></i>
+                  ארוחת בוקר
+                </th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800">
+                  <i class="fas fa-sun mr-1"></i>
+                  ארוחת צהריים
+                </th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800">
+                  <i class="fas fa-moon mr-1"></i>
+                  ארוחת ערב
+                </th>
               </tr>
             </thead>
             <tbody id="week-table">
@@ -116,6 +130,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load existing weekly plan
   loadWeeklyPlan()
   
+  // Update week summary
+  updateWeekSummary()
+  
   console.log('✅ האפליקציה נטענה בהצלחה!')
 })
 
@@ -128,24 +145,30 @@ function initWeekTable() {
   
   weekTable.innerHTML = days.map(day => `
     <tr>
-      <td class="border border-gray-200 p-3 font-medium bg-gray-50">${day}</td>
-      <td class="border border-gray-200 p-3">
-        <button onclick="addMeal('${day}', 'בוקר')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
-          <i class="fas fa-plus mr-1"></i>
-          הוסף ארוחה
-        </button>
+      <td class="border border-gray-200 p-3 font-medium bg-gray-50 w-20">${day}</td>
+      <td class="border border-gray-200 p-2 min-w-[200px]" id="cell-${day}-בוקר">
+        <div class="space-y-1">
+          <button onclick="addMeal('${day}', 'בוקר')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm">
+            <i class="fas fa-plus mr-1"></i>
+            הוסף ארוחת בוקר
+          </button>
+        </div>
       </td>
-      <td class="border border-gray-200 p-3">
-        <button onclick="addMeal('${day}', 'צהריים')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
-          <i class="fas fa-plus mr-1"></i>
-          הוסף ארוחה
-        </button>
+      <td class="border border-gray-200 p-2 min-w-[200px]" id="cell-${day}-צהריים">
+        <div class="space-y-1">
+          <button onclick="addMeal('${day}', 'צהריים')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm">
+            <i class="fas fa-plus mr-1"></i>
+            הוסף ארוחת צהריים
+          </button>
+        </div>
       </td>
-      <td class="border border-gray-200 p-3">
-        <button onclick="addMeal('${day}', 'ערב')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
-          <i class="fas fa-plus mr-1"></i>
-          הוסף ארוחה
-        </button>
+      <td class="border border-gray-200 p-2 min-w-[200px]" id="cell-${day}-ערב">
+        <div class="space-y-1">
+          <button onclick="addMeal('${day}', 'ערב')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm">
+            <i class="fas fa-plus mr-1"></i>
+            הוסף ארוחת ערב
+          </button>
+        </div>
       </td>
     </tr>
   `).join('')
@@ -482,8 +505,9 @@ function saveMeal(event, day, mealTime) {
     localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
     alert(`נוסף: ${selectedMeal.name} ליום ${day}, ארוחת ${mealTime}`)
     
-    // Update the visual cell
+    // Update the visual cell and summary
     updateMealCell(day, mealTime)
+    updateWeekSummary()
   }
   
   closeModal()
@@ -492,34 +516,74 @@ function saveMeal(event, day, mealTime) {
 // Update meal cell display
 function updateMealCell(day, mealTime) {
   const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
   const key = `${day}_${mealTime}`
   const meals = weeklyMenu[key] || []
   
-  // Find the cell and update it
-  const cells = document.querySelectorAll('td')
-  cells.forEach(cell => {
-    const button = cell.querySelector('button')
-    if (button && button.getAttribute('onclick') && button.getAttribute('onclick').includes(`'${day}', '${mealTime}'`)) {
-      if (meals.length > 0) {
-        cell.innerHTML = `
-          <div class="text-sm">
-            ${meals.map(meal => `
-              <div class="bg-blue-100 p-1 rounded mb-1 flex justify-between items-center">
-                <span>${meal.name}</span>
-                <button onclick="removeMealFromPlan('${day}', '${mealTime}', '${meal.id}')" class="text-red-500 text-xs">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            `).join('')}
-            <button onclick="addMeal('${day}', '${mealTime}')" class="w-full p-1 border border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 text-xs">
-              <i class="fas fa-plus mr-1"></i>
-              הוסף עוד
+  // Find the specific cell by ID
+  const cell = document.getElementById(`cell-${day}-${mealTime}`)
+  if (!cell) return
+  
+  if (meals.length > 0) {
+    // Show detailed view with child preferences
+    const mealDetails = meals.map(meal => {
+      // Find which children like this meal
+      const likedByChildren = children.filter(child => 
+        child.preferences && child.preferences.includes(meal.name)
+      )
+      
+      return `
+        <div class="bg-blue-100 border border-blue-200 rounded p-2 mb-2">
+          <div class="flex justify-between items-start mb-1">
+            <div class="flex-1">
+              <div class="font-medium text-blue-800">${meal.name}</div>
+              ${likedByChildren.length > 0 ? 
+                `<div class="text-xs text-green-600 mt-1">
+                  <i class="fas fa-heart text-red-400 mr-1"></i>
+                  אוהבים: ${likedByChildren.map(child => child.name).join(', ')}
+                </div>` : 
+                `<div class="text-xs text-gray-500 mt-1">
+                  <i class="fas fa-question-circle mr-1"></i>
+                  לא ידוע מי אוהב
+                </div>`
+              }
+            </div>
+            <button onclick="removeMealFromPlan('${day}', '${mealTime}', '${meal.id}')" class="text-red-500 hover:text-red-700 text-sm ml-2">
+              <i class="fas fa-times"></i>
             </button>
           </div>
-        `
-      }
-    }
-  })
+          ${likedByChildren.length > 0 && likedByChildren.length < children.length ? 
+            `<div class="text-xs text-orange-600 bg-orange-50 p-1 rounded">
+              <i class="fas fa-exclamation-triangle mr-1"></i>
+              שים לב: לא כל הילדים אוהבים את המנה הזו
+            </div>` : ''
+          }
+        </div>
+      `
+    }).join('')
+    
+    cell.innerHTML = `
+      <div class="space-y-1">
+        ${mealDetails}
+        <button onclick="addMeal('${day}', '${mealTime}')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs">
+          <i class="fas fa-plus mr-1"></i>
+          הוסף ארוחה נוספת
+        </button>
+      </div>
+    `
+  } else {
+    // Show empty state with add button
+    cell.innerHTML = `
+      <div class="space-y-1">
+        <button onclick="addMeal('${day}', '${mealTime}')" class="w-full p-2 border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-sm">
+          <i class="fas fa-plus mr-1"></i>
+          הוסף ארוחת ${mealTime}
+        </button>
+      </div>
+    `
+  }
 }
 
 // Remove meal from weekly plan
@@ -536,6 +600,7 @@ function removeMealFromPlan(day, mealTime, mealId) {
   
   localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
   updateMealCell(day, mealTime)
+  updateWeekSummary()
   
   // If cell is now empty, restore the add button
   if (!weeklyMenu[key] || weeklyMenu[key].length === 0) {
@@ -547,11 +612,59 @@ function removeMealFromPlan(day, mealTime, mealId) {
 // Load and display existing weekly plan
 function loadWeeklyPlan() {
   const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const mealTypes = ['בוקר', 'צהריים', 'ערב']
   
-  Object.keys(weeklyMenu).forEach(key => {
-    const [day, mealTime] = key.split('_')
-    updateMealCell(day, mealTime)
+  // Update all cells to show current state
+  days.forEach(day => {
+    mealTypes.forEach(mealTime => {
+      updateMealCell(day, mealTime)
+    })
   })
+}
+
+// Refresh all data displays
+function refreshAllDisplays() {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  updateChildrenList(children)
+  updateMenuList(menuItems)
+  loadWeeklyPlan()
+  updateWeekSummary()
+}
+
+// Update week summary
+function updateWeekSummary() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  
+  const totalMeals = Object.values(weeklyMenu).reduce((sum, meals) => sum + meals.length, 0)
+  const summaryEl = document.getElementById('week-summary')
+  
+  if (summaryEl) {
+    if (totalMeals > 0) {
+      summaryEl.innerHTML = `
+        <div class="flex items-center gap-4 text-sm">
+          <div class="bg-blue-100 px-2 py-1 rounded">
+            <i class="fas fa-utensils mr-1"></i>
+            ${totalMeals} ארוחות מתוכננות
+          </div>
+          <div class="bg-green-100 px-2 py-1 rounded">
+            <i class="fas fa-users mr-1"></i>
+            ${children.length} ילדים במשפחה
+          </div>
+        </div>
+      `
+    } else {
+      summaryEl.innerHTML = `
+        <div class="text-gray-500 text-sm">
+          <i class="fas fa-info-circle mr-1"></i>
+          לא נוספו ארוחות עדיין
+        </div>
+      `
+    }
+  }
 }
 
 // Manage child preferences
@@ -605,7 +718,7 @@ function saveChildPreferences(event, childId) {
   
   children[childIndex].preferences = selectedItemNames
   localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
-  updateChildrenList(children)
+  refreshAllDisplays() // Update everything including weekly view
   closeModal()
 }
 
