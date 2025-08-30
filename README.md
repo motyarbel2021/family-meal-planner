@@ -4,9 +4,9 @@
 
 ## 🌐 קישורים חשובים
 
-- **אפליקציה חיה**: https://3000-ideczzn8m5mw4416lioff-6532622b.e2b.dev
-- **GitHub Repository**: יתווסף בקרוב
-- **Cloudflare Pages**: יתווסף לאחר פרסום ייעודי
+- **🌍 אפליקציה חיה**: https://family-meal-planner.pages.dev (בפרסום...)
+- **📂 GitHub Repository**: https://github.com/motyarbel2021/family-meal-planner
+- **⚡ Development Preview**: https://3000-ideczzn8m5mw4416lioff-6532622b.e2b.dev
 
 ## ✨ תכונות מרכזיות
 
