@@ -1,9 +1,9 @@
-// Family Meal Planner - Individual Child Planning
-console.log('🚀 מאתחל את מתכנן הארוחות המשפחתי...')
+// Basic Working Meal Planner Application
+console.log('🚀 מאתחל את מתכנן הארוחות...')
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('📄 DOM מוכן - מציג ממשק משפחתי...')
+  console.log('📄 DOM מוכן - מציג ממשק...')
   
   // Get the app container
   const appContainer = document.getElementById('app')
@@ -13,62 +13,80 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Render the main interface
-  renderMainInterface()
-  
-  // Load saved data and refresh display
-  loadAndRefreshData()
-  
-  console.log('✅ האפליקציה המשפחתית נטענה בהצלחה!')
-})
-
-function renderMainInterface() {
-  const appContainer = document.getElementById('app')
   appContainer.innerHTML = `
-    <div class="max-w-7xl mx-auto p-4">
+    <div class="max-w-6xl mx-auto p-4">
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-blue-600 mb-4">
           <i class="fas fa-utensils mr-3"></i>
           מתכנן הארוחות המשפחתי
         </h1>
-        <p class="text-gray-600">תכנן ארוחות אישיות לכל ילד במשפחה</p>
+        <p class="text-gray-600">תכנן את הארוחות השבועיות של המשפחה בקלות</p>
       </div>
 
       <!-- Action Buttons -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <button onclick="showAddChildModal()" class="text-center p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all">
-          <i class="fas fa-child text-2xl mb-2 block text-blue-600"></i>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <button onclick="showAddChildModal()" class="btn btn-primary text-center p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all">
+          <i class="fas fa-child text-2xl mb-2 block"></i>
           <span class="font-medium">הוסף ילד</span>
           <div class="text-sm text-gray-500 mt-1">ניהול ילדי המשפחה</div>
         </button>
 
-        <button onclick="showAddMenuModal()" class="text-center p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all">
-          <i class="fas fa-utensils text-2xl mb-2 block text-green-600"></i>
+        <button onclick="showAddMenuModal()" class="btn btn-success text-center p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all">
+          <i class="fas fa-utensils text-2xl mb-2 block"></i>
           <span class="font-medium">הוסף מנה</span>
           <div class="text-sm text-gray-500 mt-1">מנות חדשות לתפריט</div>
         </button>
 
-        <button onclick="showChatModal()" class="text-center p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all">
-          <i class="fas fa-robot text-2xl mb-2 block text-purple-600"></i>
+        <button onclick="showChatModal()" class="btn btn-secondary text-center p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all">
+          <i class="fas fa-robot text-2xl mb-2 block"></i>
           <span class="font-medium">צ'אט חכם</span>
           <div class="text-sm text-gray-500 mt-1">עוזר תכנון ארוחות</div>
         </button>
 
-        <button onclick="showGroceryModal()" class="text-center p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all">
-          <i class="fas fa-shopping-cart text-2xl mb-2 block text-yellow-600"></i>
+        <button onclick="showGroceryModal()" class="btn btn-warning text-center p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all">
+          <i class="fas fa-shopping-cart text-2xl mb-2 block"></i>
           <span class="font-medium">רשימת קניות</span>
-          <div class="text-sm text-gray-500 mt-1">מה צריך לקנות השבוע</div>
+          <div class="text-sm text-gray-500 mt-1">מה צריך לקנות</div>
+        </button>
+
+        <button onclick="showWeeklyMenuModal()" class="btn btn-info text-center p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+          <i class="fas fa-calendar-alt text-2xl mb-2 block"></i>
+          <span class="font-medium">התפריט השבועי</span>
+          <div class="text-sm text-gray-500 mt-1">מה מתוכנן השבוע</div>
         </button>
       </div>
 
-      <!-- Weekly Planner by Children -->
+      <!-- Weekly Planner -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-xl font-bold mb-4 text-center">
-          <i class="fas fa-calendar-week mr-2"></i>
-          תכנון שבועי לפי ילדים
-        </h2>
-        <div id="weekly-planner">
-          <!-- Will be filled by JavaScript -->
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">
+            <i class="fas fa-calendar-week mr-2"></i>
+            תכנון שבועי
+          </h2>
+          <div id="week-summary" class="text-sm text-gray-600">
+            <!-- Week summary will be updated by JavaScript -->
+          </div>
+        </div>
+        <div class="overflow-x-auto bg-white rounded-lg shadow-sm border">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-gradient-to-l from-blue-50 to-blue-100">
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[80px]">ארוחה</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[100px]">ילד</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">ראשון</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שני</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שלישי</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">רביעי</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">חמישי</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שישי</th>
+                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שבת</th>
+              </tr>
+            </thead>
+            <tbody id="week-table">
+              <!-- Will be filled by JavaScript -->
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -98,109 +116,112 @@ function renderMainInterface() {
       </div>
     </div>
   `
+
+  // Initialize the weekly table
+  initWeekTable()
+  
+  // Load saved data
+  loadSavedData()
+  
+  // Load existing weekly plan
+  loadWeeklyPlan()
+  
+  // Update week summary
+  updateWeekSummary()
+  
+  console.log('✅ האפליקציה נטענה בהצלחה!')
+})
+
+// Initialize weekly planning table
+function initWeekTable() {
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const weekTable = document.getElementById('week-table')
+  
+  if (!weekTable) return
+  
+  let tableHTML = ''
+  
+  // If no children, show message to add children first
+  if (children.length === 0) {
+    tableHTML = `
+      <tr>
+        <td colspan="${days.length + 2}" class="text-center p-8 text-gray-500">
+          <i class="fas fa-users text-3xl mb-2 block"></i>
+          <div class="mb-2">נא הוסף ילדים למשפחה תחילה</div>
+          <button onclick="showAddChildModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <i class="fas fa-plus mr-1"></i>
+            הוסף ילד ראשון
+          </button>
+        </td>
+      </tr>
+    `
+  } else {
+    // Create table exactly like the image: merged cells for meal types
+    const mealTypes = [
+      { name: 'בוקר', displayName: 'ארוחת בוקר', icon: 'fas fa-coffee', color: 'bg-yellow-50' },
+      { name: 'צהריים', displayName: 'ארוחת צהריים', icon: 'fas fa-sun', color: 'bg-orange-50' },
+      { name: 'ערב', displayName: 'ארוחת ערב', icon: 'fas fa-moon', color: 'bg-blue-50' }
+    ]
+    
+    mealTypes.forEach((meal, mealIndex) => {
+      children.forEach((child, childIndex) => {
+        if (childIndex === 0) {
+          // First row for each meal type - includes merged cell
+          tableHTML += `
+            <tr class="border-t-2 border-gray-300">
+              <td class="border border-gray-200 p-3 font-bold text-center ${meal.color} align-middle" rowspan="${children.length}">
+                <div class="flex flex-col items-center justify-center">
+                  <i class="${meal.icon} text-xl mb-2 text-gray-700"></i>
+                  <span class="text-sm font-medium text-gray-800 writing-mode-vertical whitespace-nowrap">${meal.displayName}</span>
+                </div>
+              </td>
+              <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center min-w-[80px]">
+                ${child.name}
+              </td>
+              ${days.map(day => `
+                <td class="border border-gray-200 p-1 min-w-[100px] h-12" id="cell-${day}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+                          class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </td>
+              `).join('')}
+            </tr>
+          `
+        } else {
+          // Subsequent rows for other children in same meal type
+          tableHTML += `
+            <tr>
+              <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center">
+                ${child.name}
+              </td>
+              ${days.map(day => `
+                <td class="border border-gray-200 p-1 h-12" id="cell-${day}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+                          class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </td>
+              `).join('')}
+            </tr>
+          `
+        }
+      })
+    })
+  }
+  
+  weekTable.innerHTML = tableHTML
 }
 
-// Load saved data and refresh all displays
-function loadAndRefreshData() {
+// Load saved data from localStorage
+function loadSavedData() {
   const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
   const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  const weekPlan = JSON.parse(localStorage.getItem('mealPlannerWeekPlan') || '{}')
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
   
   updateChildrenList(children)
   updateMenuList(menuItems)
-  renderWeeklyPlannerByChildren(children, menuItems, weekPlan)
-}
-
-// Render weekly planner organized by children
-function renderWeeklyPlannerByChildren(children, menuItems, weekPlan) {
-  const container = document.getElementById('weekly-planner')
-  if (!container) return
-  
-  if (children.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-8 text-gray-500">
-        <i class="fas fa-child text-4xl mb-4 block"></i>
-        <p class="text-lg">עדיין לא נוספו ילדים למשפחה</p>
-        <p class="text-sm">הוסף ילדים כדי להתחיל לתכנן ארוחות אישיות</p>
-      </div>
-    `
-    return
-  }
-  
-  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
-  const meals = [
-    { key: 'breakfast', name: 'בוקר', icon: 'fa-coffee', color: 'orange' },
-    { key: 'lunch', name: 'צהריים', icon: 'fa-hamburger', color: 'blue' },
-    { key: 'dinner', name: 'ערב', icon: 'fa-pizza-slice', color: 'green' }
-  ]
-
-  container.innerHTML = `
-    <div class="overflow-x-auto">
-      <div class="min-w-max">
-        <!-- Header Row -->
-        <div class="grid grid-cols-${1 + (days.length * meals.length)} gap-2 mb-2">
-          <div class="font-bold text-center p-3 bg-gray-100 rounded">ילדים</div>
-          ${days.map(day => `
-            <div class="col-span-${meals.length} font-bold text-center p-2 bg-gray-100 rounded">${day}</div>
-          `).join('')}
-        </div>
-
-        <!-- Meals Header -->
-        <div class="grid grid-cols-${1 + (days.length * meals.length)} gap-2 mb-4">
-          <div></div>
-          ${days.map(() => 
-            meals.map(meal => `
-              <div class="text-center p-2 bg-${meal.color}-50 rounded text-sm">
-                <i class="fas ${meal.icon} text-${meal.color}-600 mb-1 block"></i>
-                ${meal.name}
-              </div>
-            `).join('')
-          ).join('')}
-        </div>
-
-        <!-- Children Rows -->
-        ${children.map(child => `
-          <div class="grid grid-cols-${1 + (days.length * meals.length)} gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
-            <!-- Child Name -->
-            <div class="flex items-center font-medium p-3 bg-white rounded border">
-              <i class="fas fa-child mr-2 text-blue-500"></i>
-              <div>
-                <div>${child.name}</div>
-                ${child.age ? `<div class="text-xs text-gray-500">גיל ${child.age}</div>` : ''}
-              </div>
-            </div>
-
-            <!-- Meal Slots for each day -->
-            ${days.map(day => 
-              meals.map(meal => {
-                const mealKey = `${child.id}_${day}_${meal.key}`
-                const currentMeal = weekPlan[mealKey]
-                return `
-                  <div class="meal-slot bg-white rounded border p-2 min-h-[80px] hover:shadow-md transition-shadow">
-                    ${currentMeal ? `
-                      <div class="text-sm font-medium text-gray-800 mb-1">${currentMeal.name}</div>
-                      <div class="flex justify-between items-center">
-                        <div class="text-xs text-gray-500">${currentMeal.time || ''}</div>
-                        <button onclick="removeMeal('${mealKey}')" class="text-red-500 hover:text-red-700 text-xs">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    ` : `
-                      <button onclick="addMealForChild('${child.id}', '${child.name}', '${day}', '${meal.key}', '${meal.name}')" 
-                              class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-400 hover:border-${meal.color}-400 hover:text-${meal.color}-600 transition-colors text-sm">
-                        <i class="fas fa-plus mb-1 block"></i>
-                        הוסף ארוחה
-                      </button>
-                    `}
-                  </div>
-                `
-              }).join('')
-            ).join('')}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `
 }
 
 // Update children list display
@@ -215,14 +236,22 @@ function updateChildrenList(children) {
   
   container.innerHTML = children.map(child => `
     <div class="flex justify-between items-center p-3 bg-gray-50 rounded border">
-      <div>
+      <div class="flex-1">
         <span class="font-medium">${child.name}</span>
         ${child.age ? `<span class="text-sm text-gray-500 mr-2">(גיל ${child.age})</span>` : ''}
-        ${child.preferences ? `<div class="text-xs text-gray-500">העדפות: ${child.preferences}</div>` : ''}
+        ${child.preferences && child.preferences.length > 0 ? 
+          `<div class="text-xs text-blue-600 mt-1">העדפות: ${child.preferences.join(', ')}</div>` : 
+          '<div class="text-xs text-gray-400 mt-1">אין העדפות</div>'
+        }
       </div>
-      <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700">
-        <i class="fas fa-trash"></i>
-      </button>
+      <div class="flex gap-2">
+        <button onclick="manageChildPreferences('${child.id}')" class="text-blue-500 hover:text-blue-700 text-sm">
+          <i class="fas fa-heart"></i>
+        </button>
+        <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     </div>
   `).join('')
 }
@@ -242,7 +271,6 @@ function updateMenuList(menuItems) {
       <div>
         <span class="font-medium">${item.name}</span>
         <div class="text-sm text-gray-500">${(item.mealTypes || []).join(', ')}</div>
-        ${item.prepTime ? `<div class="text-xs text-gray-500">זמן הכנה: ${item.prepTime} דקות</div>` : ''}
       </div>
       <button onclick="removeMenuItem('${item.id}')" class="text-red-500 hover:text-red-700">
         <i class="fas fa-trash"></i>
@@ -263,12 +291,8 @@ function showAddChildModal() {
         <label class="block text-sm font-medium mb-2">גיל (אופציונלי)</label>
         <input type="number" id="child-age" class="w-full p-2 border border-gray-300 rounded" min="0" max="25">
       </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">העדפות מזון (אופציונלי)</label>
-        <input type="text" id="child-preferences" class="w-full p-2 border border-gray-300 rounded" placeholder="למשל: לא אוהב ירקות, צמחוני...">
-      </div>
       <div class="flex gap-3">
-        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">הוסף ילד</button>
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">הוסף</button>
         <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
       </div>
     </form>
@@ -297,228 +321,27 @@ function showAddMenuModal() {
           </label>
         </div>
       </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">זמן הכנה (דקות, אופציונלי)</label>
-        <input type="number" id="prep-time" class="w-full p-2 border border-gray-300 rounded" min="1" max="300">
-      </div>
       <div class="flex gap-3">
-        <button type="submit" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">הוסף מנה</button>
+        <button type="submit" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">הוסף</button>
         <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
       </div>
     </form>
   `)
 }
 
-// Add meal for specific child
-function addMealForChild(childId, childName, day, mealKey, mealName) {
-  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  
-  if (menuItems.length === 0) {
-    alert('נא הוסף מנות למאגר תחילה')
-    return
-  }
-  
-  // Filter meals appropriate for this meal type
-  const relevantMeals = menuItems.filter(item => 
-    item.mealTypes.includes(mealKey) || item.mealTypes.length === 0
-  )
-  
-  if (relevantMeals.length === 0) {
-    alert(`אין מנות מתאימות לארוחת ${mealName}`)
-    return
-  }
-  
-  const mealOptions = relevantMeals.map(meal => 
-    `<option value="${meal.id}" data-name="${meal.name}" data-preptime="${meal.prepTime || ''}">${meal.name}${meal.prepTime ? ` (${meal.prepTime} דקות)` : ''}</option>`
-  ).join('')
-  
-  showModal(`הוסף ארוחה ל${childName}`, `
-    <div class="mb-4">
-      <h4 class="font-medium text-gray-800">${childName} - יום ${day}, ארוחת ${mealName}</h4>
-    </div>
-    <form onsubmit="saveMealForChild(event, '${childId}', '${day}', '${mealKey}')">
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">בחר מנה:</label>
-        <select id="meal-select" class="w-full p-2 border border-gray-300 rounded" required>
-          <option value="">בחר מנה...</option>
-          ${mealOptions}
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">שעת הארוחה (אופציונלי):</label>
-        <input type="time" id="meal-time" class="w-full p-2 border border-gray-300 rounded">
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">הערות (אופציונלי):</label>
-        <input type="text" id="meal-notes" class="w-full p-2 border border-gray-300 rounded" placeholder="למשל: בלי בצל, עם קטשופ...">
-      </div>
-      <div class="flex gap-3">
-        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">הוסף ארוחה</button>
-        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
-      </div>
-    </form>
-  `)
-}
-
-// Save meal for specific child
-function saveMealForChild(event, childId, day, mealKey) {
-  event.preventDefault()
-  
-  const mealSelect = document.getElementById('meal-select')
-  const selectedOption = mealSelect.options[mealSelect.selectedIndex]
-  const mealTime = document.getElementById('meal-time').value
-  const mealNotes = document.getElementById('meal-notes').value
-  
-  if (!selectedOption.value) return
-  
-  const weekPlan = JSON.parse(localStorage.getItem('mealPlannerWeekPlan') || '{}')
-  const mealPlanKey = `${childId}_${day}_${mealKey}`
-  
-  weekPlan[mealPlanKey] = {
-    id: selectedOption.value,
-    name: selectedOption.dataset.name,
-    time: mealTime,
-    notes: mealNotes,
-    prepTime: selectedOption.dataset.preptime
-  }
-  
-  localStorage.setItem('mealPlannerWeekPlan', JSON.stringify(weekPlan))
-  closeModal()
-  loadAndRefreshData() // Refresh the display
-}
-
-// Remove meal from plan
-function removeMeal(mealKey) {
-  const weekPlan = JSON.parse(localStorage.getItem('mealPlannerWeekPlan') || '{}')
-  delete weekPlan[mealKey]
-  localStorage.setItem('mealPlannerWeekPlan', JSON.stringify(weekPlan))
-  loadAndRefreshData() // Refresh the display
-}
-
-// Generate smart grocery list based on weekly plan
-function showGroceryModal() {
-  const weekPlan = JSON.parse(localStorage.getItem('mealPlannerWeekPlan') || '{}')
-  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
-  
-  // Count meals and analyze what's needed
-  const mealCounts = {}
-  const mealsByDay = {}
-  
-  Object.values(weekPlan).forEach(meal => {
-    mealCounts[meal.name] = (mealCounts[meal.name] || 0) + 1
-    
-    // Group by day for display
-    const dayInfo = Object.keys(weekPlan).find(key => weekPlan[key] === meal)
-    if (dayInfo) {
-      const [childId, day] = dayInfo.split('_')
-      if (!mealsByDay[day]) mealsByDay[day] = []
-      mealsByDay[day].push(meal.name)
-    }
-  })
-  
-  const groceryItems = [
-    'לחם', 'חלב', 'ביצים', 'גבינה', 'חמאה', 'יוגורט',
-    'פירות עונה', 'בננות', 'תפוחים', 'ירקות עלים',
-    'עגבניות', 'מלפפונים', 'גזר', 'בצל', 'שום',
-    'בשר בקר/עוף', 'דגים', 'אורז', 'פסטה', 'לחם מקמח מלא',
-    'דגנים לארוחת בוקר', 'שמן זית', 'מלח', 'פלפל', 'סוכר'
-  ]
-  
-  showModal('רשימת קניות חכמה', `
-    <div class="mb-4">
-      <h4 class="font-medium mb-3">מבוסס על התכנון השבועי:</h4>
-      
-      ${Object.keys(mealCounts).length > 0 ? `
-        <div class="bg-blue-50 p-3 rounded mb-4">
-          <h5 class="font-medium text-blue-800 mb-2">מנות מתוכננות השבוע:</h5>
-          <div class="text-sm text-blue-700">
-            ${Object.entries(mealCounts).map(([meal, count]) => 
-              `<div>• ${meal} (${count} פעמים)</div>`
-            ).join('')}
-          </div>
-        </div>
-      ` : ''}
-      
-      <div class="bg-gray-50 p-4 rounded max-h-64 overflow-y-auto">
-        <h5 class="font-medium mb-2">רשימת קניות מוצעת:</h5>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-          ${groceryItems.map(item => `
-            <div class="flex items-center">
-              <input type="checkbox" class="ml-2" id="grocery-${item}">
-              <label for="grocery-${item}">${item}</label>
-            </div>
-          `).join('')}
-        </div>
-        
-        <div class="mt-4 p-3 bg-yellow-50 rounded">
-          <div class="flex items-center text-sm text-yellow-800">
-            <i class="fas fa-lightbulb mr-2"></i>
-            <span>💡 רמזים:</span>
-          </div>
-          <div class="text-xs text-yellow-700 mt-1">
-            • קנה ${children.length} כמויות של מוצרי בסיס<br>
-            • ${Object.keys(mealCounts).length > 0 ? 'בדוק מרכיבים ספציפיים למנות המתוכננות' : 'תכנן מנות קודם לרשימה מדויקת יותר'}<br>
-            • אל תשכח חטיפים בריאים לילדים
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="flex gap-3">
-      <button onclick="printGroceryList()" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        <i class="fas fa-print mr-1"></i>
-        הדפס רשימה
-      </button>
-      <button onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
-    </div>
-  `)
-}
-
-// Print grocery list function
-function printGroceryList() {
-  const checkedItems = Array.from(document.querySelectorAll('#modal input[type="checkbox"]:checked'))
-    .map(checkbox => checkbox.nextElementSibling.textContent)
-  
-  if (checkedItems.length === 0) {
-    alert('נא בחר פריטים ברשימה')
-    return
-  }
-  
-  const printWindow = window.open('', '_blank')
-  printWindow.document.write(`
-    <html dir="rtl">
-    <head><title>רשימת קניות משפחתית</title></head>
-    <body style="font-family: Arial, sans-serif; padding: 20px;">
-      <h2>🛒 רשימת קניות משפחתית</h2>
-      <p><strong>תאריך:</strong> ${new Date().toLocaleDateString('he-IL')}</p>
-      <ul>
-        ${checkedItems.map(item => `<li>☐ ${item}</li>`).join('')}
-      </ul>
-    </body>
-    </html>
-  `)
-  printWindow.document.close()
-  printWindow.print()
-}
-
-// Show chat modal with family-specific responses
+// Show chat modal
 function showChatModal() {
-  showModal('צ\'אט חכם - עוזר תכנון משפחתי', `
+  showModal('צ\'אט חכם - עוזר תכנון ארוחות', `
     <div class="mb-4">
       <div id="chat-messages" class="bg-gray-50 p-4 rounded h-48 overflow-y-auto mb-4">
         <div class="text-center text-gray-600 py-4">
           <i class="fas fa-robot text-2xl mb-2 block"></i>
-          שלום! אני עוזר תכנון הארוחות המשפחתי. אוכל לעזור לך עם:<br>
-          • הצעות מנות לילדים<br>
-          • איזון תזונתי<br>
-          • חיסכון בזמן ובכסף<br>
-          • רעיונות לארוחות מהירות
+          שלום! אני עוזר תכנון הארוחות שלך. איך אוכל לעזור היום?
         </div>
       </div>
       <div class="flex gap-2">
-        <input type="text" id="chat-input" class="flex-1 p-2 border border-gray-300 rounded" placeholder="איך אוכל לעזור? נסה: 'מה לתת לילד בן 5 לארוחת בוקר?'">
-        <button onclick="sendFamilyMessage()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">שלח</button>
+        <input type="text" id="chat-input" class="flex-1 p-2 border border-gray-300 rounded" placeholder="הקלד הודעה...">
+        <button onclick="sendMessage()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">שלח</button>
       </div>
     </div>
     <button onclick="closeModal()" class="w-full bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
@@ -527,13 +350,537 @@ function showChatModal() {
   // Add enter key listener
   document.getElementById('chat-input').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-      sendFamilyMessage()
+      sendMessage()
     }
   })
 }
 
-// Send family-oriented chat message
-function sendFamilyMessage() {
+// Show grocery list modal
+function showGroceryModal() {
+  showModal('רשימת קניות', `
+    <div class="mb-4">
+      <h4 class="font-medium mb-3">רשימת קניות בסיסית:</h4>
+      <div class="bg-gray-50 p-4 rounded">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>לחם</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>חלב</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>ביצים</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>גבינה</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>פירות</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>ירקות</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>בשר/דגים</span>
+          </div>
+          <div class="flex items-center">
+            <input type="checkbox" class="ml-2">
+            <span>אורז/פסטה</span>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">
+          💡 הוסף מנות ותכנן שבוע כדי לקבל רשימת קניות מותאמת!
+        </p>
+      </div>
+    </div>
+    <button onclick="closeModal()" class="w-full bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
+  `)
+}
+
+// Generic modal function
+function showModal(title, content) {
+  const modal = document.createElement('div')
+  modal.id = 'modal'
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  modal.innerHTML = `
+    <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-96 overflow-y-auto">
+      <h3 class="text-lg font-bold mb-4">${title}</h3>
+      ${content}
+    </div>
+  `
+  document.body.appendChild(modal)
+}
+
+// Close modal
+function closeModal() {
+  const modal = document.getElementById('modal')
+  if (modal) {
+    modal.remove()
+  }
+}
+
+// Add child function
+function addChild(event) {
+  event.preventDefault()
+  const name = document.getElementById('child-name').value
+  const age = document.getElementById('child-age').value
+  
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const newChild = {
+    id: Date.now().toString(),
+    name: name,
+    age: age ? parseInt(age) : null
+  }
+  
+  children.push(newChild)
+  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
+  refreshAllDisplays() // This will recreate the table with new child
+  closeModal()
+}
+
+// Add menu item function
+function addMenuItem(event) {
+  event.preventDefault()
+  const name = document.getElementById('menu-name').value
+  const checkboxes = document.querySelectorAll('#menu-form input[type="checkbox"]:checked')
+  const mealTypes = Array.from(checkboxes).map(cb => cb.value)
+  
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const newItem = {
+    id: Date.now().toString(),
+    name: name,
+    mealTypes: mealTypes
+  }
+  
+  menuItems.push(newItem)
+  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(menuItems))
+  updateMenuList(menuItems)
+  closeModal()
+}
+
+// Remove child
+function removeChild(id) {
+  let children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  children = children.filter(child => child.id !== id)
+  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
+  refreshAllDisplays() // This will recreate the table without removed child
+}
+
+// Remove menu item
+function removeMenuItem(id) {
+  let menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  menuItems = menuItems.filter(item => item.id !== id)
+  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(menuItems))
+  updateMenuList(menuItems)
+}
+
+// Add meal for specific child
+function addMealForChild(day, mealTime, childId, childName) {
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const child = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]').find(c => c.id === childId)
+  
+  if (menuItems.length === 0) {
+    alert('נא הוסף מנות למאגר תחילה')
+    return
+  }
+  
+  const relevantMeals = menuItems.filter(item => 
+    item.mealTypes.includes(mealTime) || item.mealTypes.length === 0
+  )
+  
+  if (relevantMeals.length === 0) {
+    alert(`אין מנות מתאימות לארוחת ${mealTime}`)
+    return
+  }
+  
+  // Show child preferences if available
+  const childPreferences = child?.preferences || []
+  const mealOptions = relevantMeals.map(meal => {
+    const isPreferred = childPreferences.includes(meal.name)
+    return `<option value="${meal.id}" ${isPreferred ? 'class="bg-green-100"' : ''}>${meal.name}${isPreferred ? ' ❤️' : ''}</option>`
+  }).join('')
+  
+  showModal(`הוסף ארוחה עבור ${childName} - יום ${day}, ארוחת ${mealTime}`, `
+    <form onsubmit="saveMealForChild(event, '${day}', '${mealTime}', '${childId}')">
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">בחר מנה עבור ${childName}:</label>
+        <select id="meal-select" class="w-full p-2 border border-gray-300 rounded" required>
+          <option value="">בחר מנה...</option>
+          ${mealOptions}
+        </select>
+        ${childPreferences.length > 0 ? 
+          '<p class="text-xs text-green-600 mt-1">❤️ מנות שהילד אוהב מסומנות בלב</p>' : 
+          '<p class="text-xs text-gray-500 mt-1">לא הוגדרו העדפות לילד זה</p>'
+        }
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">הוסף</button>
+        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
+      </div>
+    </form>
+  `)
+}
+
+// Legacy function for backward compatibility
+function addMeal(day, mealTime) {
+  addMealForChild(day, mealTime, null, 'כללי')
+}
+
+// Save meal for specific child
+function saveMealForChild(event, day, mealTime, childId) {
+  event.preventDefault()
+  const mealId = document.getElementById('meal-select').value
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const selectedMeal = menuItems.find(item => item.id === mealId)
+  const child = children.find(c => c.id === childId)
+  
+  if (selectedMeal && child) {
+    // Save to weekly menu structure with child info
+    let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+    const key = `${day}_${mealTime}_${childId}`
+    
+    weeklyMenu[key] = {
+      mealId: selectedMeal.id,
+      mealName: selectedMeal.name,
+      childId: childId,
+      childName: child.name,
+      addedAt: new Date().toISOString(),
+      isPreferred: child.preferences && child.preferences.includes(selectedMeal.name)
+    }
+    
+    localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
+    alert(`נוסף: ${selectedMeal.name} עבור ${child.name} ביום ${day}, ארוחת ${mealTime}`)
+    
+    // Update the visual cell and summary
+    updateMealCellForChild(day, mealTime, childId)
+    updateWeekSummary()
+  }
+  
+  closeModal()
+}
+
+// Legacy function for backward compatibility
+function saveMeal(event, day, mealTime) {
+  saveMealForChild(event, day, mealTime, null)
+}
+
+// Update meal cell display for specific child
+function updateMealCellForChild(day, mealTime, childId) {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const key = `${day}_${mealTime}_${childId}`
+  const mealData = weeklyMenu[key]
+  
+  // Find the specific cell by ID
+  const cell = document.getElementById(`cell-${day}-${mealTime}-${childId}`)
+  if (!cell) return
+  
+  if (mealData) {
+    // Show the meal in a compact format suitable for table cells
+    cell.innerHTML = `
+      <div class="bg-blue-100 border border-blue-200 rounded p-1 text-center h-full flex flex-col justify-center relative group">
+        <div class="font-medium text-blue-800 text-xs leading-tight">${mealData.mealName}</div>
+        ${mealData.isPreferred ? 
+          '<div class="text-xs text-green-600 mt-1">❤️</div>' : 
+          '<div class="text-xs text-gray-500 mt-1">🤷‍♂️</div>'
+        }
+        <button onclick="removeMealForChild('${day}', '${mealTime}', '${childId}')" 
+                class="absolute top-0 right-0 text-red-500 hover:text-red-700 text-xs opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full w-4 h-4 flex items-center justify-center -mt-1 -mr-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+    `
+  } else {
+    // Show empty state with add button
+    const child = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]').find(c => c.id === childId)
+    cell.innerHTML = `
+      <button onclick="addMealForChild('${day}', '${mealTime}', '${childId}', '${child?.name || ''}')" 
+              class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
+        <i class="fas fa-plus"></i>
+      </button>
+    `
+  }
+}
+
+// Legacy function - now updates all children for a meal type
+function updateMealCell(day, mealTime) {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  children.forEach(child => {
+    updateMealCellForChild(day, mealTime, child.id)
+  })
+}
+
+// Remove meal for specific child
+function removeMealForChild(day, mealTime, childId) {
+  let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const key = `${day}_${mealTime}_${childId}`
+  
+  if (weeklyMenu[key]) {
+    delete weeklyMenu[key]
+  }
+  
+  localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
+  updateMealCellForChild(day, mealTime, childId)
+  updateWeekSummary()
+}
+
+// Legacy function for backward compatibility
+function removeMealFromPlan(day, mealTime, mealId) {
+  removeMealForChild(day, mealTime, mealId)
+}
+
+// Load and display existing weekly plan
+function loadWeeklyPlan() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const mealTypes = ['בוקר', 'צהריים', 'ערב']
+  
+  // Update all cells to show current state
+  days.forEach(day => {
+    mealTypes.forEach(mealTime => {
+      children.forEach(child => {
+        updateMealCellForChild(day, mealTime, child.id)
+      })
+    })
+  })
+}
+
+// Refresh all data displays
+function refreshAllDisplays() {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  updateChildrenList(children)
+  updateMenuList(menuItems)
+  loadWeeklyPlan()
+  updateWeekSummary()
+}
+
+// Update week summary
+function updateWeekSummary() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  
+  const totalMeals = Object.values(weeklyMenu).reduce((sum, meals) => sum + meals.length, 0)
+  const summaryEl = document.getElementById('week-summary')
+  
+  if (summaryEl) {
+    if (totalMeals > 0) {
+      summaryEl.innerHTML = `
+        <div class="flex items-center gap-4 text-sm">
+          <div class="bg-blue-100 px-2 py-1 rounded">
+            <i class="fas fa-utensils mr-1"></i>
+            ${totalMeals} ארוחות מתוכננות
+          </div>
+          <div class="bg-green-100 px-2 py-1 rounded">
+            <i class="fas fa-users mr-1"></i>
+            ${children.length} ילדים במשפחה
+          </div>
+        </div>
+      `
+    } else {
+      summaryEl.innerHTML = `
+        <div class="text-gray-500 text-sm">
+          <i class="fas fa-info-circle mr-1"></i>
+          לא נוספו ארוחות עדיין
+        </div>
+      `
+    }
+  }
+}
+
+// Manage child preferences
+function manageChildPreferences(childId) {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const child = children.find(c => c.id === childId)
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  if (!child) return
+  
+  const currentPreferences = child.preferences || []
+  
+  const menuOptions = menuItems.map(item => 
+    `<label class="flex items-center p-2 hover:bg-gray-50 rounded">
+      <input type="checkbox" value="${item.id}" ${currentPreferences.includes(item.name) ? 'checked' : ''} class="ml-2">
+      <span>${item.name}</span>
+    </label>`
+  ).join('')
+  
+  showModal(`העדפות אוכל עבור ${child.name}`, `
+    <form onsubmit="saveChildPreferences(event, '${childId}')">
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 mb-3">בחר את המנות שהילד אוהב:</p>
+        <div class="max-h-48 overflow-y-auto border border-gray-200 rounded p-2">
+          ${menuOptions || '<p class="text-gray-500">אין מנות במאגר עדיין</p>'}
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">שמור</button>
+        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
+      </div>
+    </form>
+  `)
+}
+
+// Save child preferences
+function saveChildPreferences(event, childId) {
+  event.preventDefault()
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const childIndex = children.findIndex(c => c.id === childId)
+  
+  if (childIndex === -1) return
+  
+  const checkedItems = document.querySelectorAll('input[type="checkbox"]:checked')
+  const selectedItemIds = Array.from(checkedItems).map(cb => cb.value)
+  const selectedItemNames = selectedItemIds.map(id => {
+    const item = menuItems.find(m => m.id === id)
+    return item ? item.name : null
+  }).filter(name => name)
+  
+  children[childIndex].preferences = selectedItemNames
+  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
+  refreshAllDisplays() // Update everything including weekly view
+  closeModal()
+}
+
+// Show weekly menu modal
+function showWeeklyMenuModal() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const mealTypes = ['בוקר', 'צהריים', 'ערב']
+  
+  let menuContent = '<div class="text-center text-gray-500 py-4">לא נוסף תפריט עדיין</div>'
+  
+  if (Object.keys(weeklyMenu).length > 0) {
+    menuContent = `
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200 text-sm">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="border border-gray-200 p-2">יום</th>
+              <th class="border border-gray-200 p-2">ארוחת בוקר</th>
+              <th class="border border-gray-200 p-2">ארוחת צהריים</th>
+              <th class="border border-gray-200 p-2">ארוחת ערב</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${days.map(day => `
+              <tr>
+                <td class="border border-gray-200 p-2 font-medium bg-gray-50">${day}</td>
+                ${mealTypes.map(mealTime => {
+                  const key = `${day}_${mealTime}`
+                  const meals = weeklyMenu[key] || []
+                  return `<td class="border border-gray-200 p-2">
+                    ${meals.length > 0 ? 
+                      meals.map(meal => `<div class="bg-blue-100 p-1 rounded mb-1 text-xs">${meal.name}</div>`).join('') :
+                      '<span class="text-gray-400 text-xs">לא נבחר</span>'
+                    }
+                  </td>`
+                }).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  }
+  
+  showModal('התפריט השבועי המתוכנן', `
+    <div class="mb-4">
+      <h4 class="font-medium mb-3">סקירת התפריט השבועי:</h4>
+      ${menuContent}
+    </div>
+    <div class="flex gap-3">
+      <button onclick="generateGroceryList()" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <i class="fas fa-shopping-cart mr-1"></i>
+        צור רשימת קניות
+      </button>
+      <button onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
+    </div>
+  `)
+}
+
+// Generate smart grocery list based on weekly menu
+function generateGroceryList() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  // Count meal occurrences
+  const mealCounts = {}
+  Object.values(weeklyMenu).forEach(meals => {
+    meals.forEach(meal => {
+      mealCounts[meal.name] = (mealCounts[meal.name] || 0) + 1
+    })
+  })
+  
+  // Basic grocery mapping
+  const groceryMapping = {
+    'פסטה': ['פסטה', 'רוטב עגבניות', 'גבינה מגוררת'],
+    'אורז': ['אורז', 'ירקות מעורבים'],
+    'סלט': ['מלפפון', 'עגבניות', 'חסה', 'בצל'],
+    'פיתה': ['פיתה', 'חומוס', 'טחינה'],
+    'ביצים': ['ביצים', 'לחם', 'חמאה'],
+    'דגים': ['דגים', 'לימון', 'תבלינים'],
+    'עוף': ['עוף', 'בצל', 'שמן'],
+    'מרק': ['ירקות למרק', 'קוביות מרק'],
+  }
+  
+  let groceryList = new Set()
+  
+  // Add basic staples
+  ['לחם', 'חלב', 'ביצים', 'שמן', 'מלח', 'פלפל'].forEach(item => groceryList.add(item))
+  
+  // Add items based on planned meals
+  Object.keys(mealCounts).forEach(mealName => {
+    const count = mealCounts[mealName]
+    
+    // Try to match with grocery mapping
+    Object.keys(groceryMapping).forEach(key => {
+      if (mealName.includes(key) || key.includes(mealName)) {
+        groceryMapping[key].forEach(item => {
+          groceryList.add(`${item}${count > 1 ? ` (x${count})` : ''}`)
+        })
+      }
+    })
+  })
+  
+  closeModal()
+  
+  // Show enhanced grocery list
+  showModal('רשימת קניות חכמה', `
+    <div class="mb-4">
+      <h4 class="font-medium mb-3">רשימת קניות מבוססת על התפריט השבועי:</h4>
+      <div class="bg-gray-50 p-4 rounded max-h-64 overflow-y-auto">
+        ${groceryList.size > 0 ? `
+          <div class="grid grid-cols-1 gap-2">
+            ${Array.from(groceryList).map(item => `
+              <label class="flex items-center p-1 hover:bg-white rounded">
+                <input type="checkbox" class="ml-2">
+                <span class="text-sm">${item}</span>
+              </label>
+            `).join('')}
+          </div>
+        ` : '<p class="text-gray-500 text-center">לא נמצאו פריטים לרשימת קניות</p>'}
+      </div>
+      <p class="text-xs text-gray-500 mt-3">
+        💡 הרשימה מבוססת על המנות שתכננת השבוע
+      </p>
+    </div>
+    <button onclick="closeModal()" class="w-full bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
+  `)
+}
+
+// Send chat message
+function sendMessage() {
   const input = document.getElementById('chat-input')
   const message = input.value.trim()
   
@@ -542,148 +889,21 @@ function sendFamilyMessage() {
   addChatMessage('אתה', message)
   input.value = ''
   
-  // Family-specific chatbot responses
+  // Simple chatbot responses
   setTimeout(() => {
-    const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
-    const response = getFamilyResponse(message, children)
-    addChatMessage('עוזר משפחתי', response)
+    const responses = [
+      'זה נשמע נהדר! מה עוד תרצה לתכנן?',
+      'רעיון מעולה! אולי כדאי להוסיף גם ירקות?',
+      'נחמד! האם יש העדפות מיוחדות לילדים?',
+      'מושלם! אל תשכח לשתות הרבה מים',
+      'איך אוכל לעזור לך עוד בתכנון?'
+    ]
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+    addChatMessage('עוזר', randomResponse)
   }, 1000)
 }
 
-// Get family-specific response
-function getFamilyResponse(message, children) {
-  const lowerMessage = message.toLowerCase()
-  
-  if (lowerMessage.includes('בוקר') || lowerMessage.includes('ארוחת בוקר')) {
-    return 'לארוחת בוקר אני ממליץ: דגנים עם חלב, ביצה רכה עם לחם, יוגורט עם פירות, או טוסט עם גבינה. מה הילדים הכי אוהבים?'
-  }
-  
-  if (lowerMessage.includes('צהריים') || lowerMessage.includes('ארוחת צהריים')) {
-    return 'לארוחת צהריים נהדר: פסטה עם רוטב עגבניות, אורז עם עוף וירקות, סנדוויץ\' טונה, או קציצות עם פירה. חשוב להוסיף ירקות!'
-  }
-  
-  if (lowerMessage.includes('ערב') || lowerMessage.includes('ארוחת ערב')) {
-    return 'לארוחת ערב אני מציע: דג עם אורז, עוף בתנור עם ירקות, חביתה עם סלט, או מרק עם לחם. בערב עדיף משהו קל יותר.'
-  }
-  
-  if (lowerMessage.includes('ילדים') || lowerMessage.includes('ילד')) {
-    if (children.length > 0) {
-      return `יש לך ${children.length} ילדים במערכת: ${children.map(c => c.name).join(', ')}. כל ילד יכול לקבל מנה שונה! מה הם הכי אוהבים לאכול?`
-    }
-    return 'עדיין לא הוספת ילדים למערכת. הוסף אותם כדי שאוכל לתת עצות מותאמות!'
-  }
-  
-  if (lowerMessage.includes('בריא') || lowerMessage.includes('תזונה')) {
-    return 'לתזונה בריאה חשוב: ירקות וFruitsפירות מגוונים, חלבונים (ביצים, דגים, עוף), דגנים מלאים, ומעט מתוקים. האם יש ילדים שלא אוהבים ירקות?'
-  }
-  
-  if (lowerMessage.includes('מהיר') || lowerMessage.includes('זמן')) {
-    return 'למנות מהירות: ביצים (5 דק\'), פסטה (10 דק\'), סנדוויצ\'ים, קורנפלקס, או פירות. אפשר להכין מראש ולאחסן במקרר!'
-  }
-  
-  if (lowerMessage.includes('לא אוהב') || lowerMessage.includes('בררן')) {
-    return 'לילדים בררנים: תתחיל עם מה שהם אוהבים ותוסיף בהדרגה דברים חדשים. ערבב ירקות במנות שהם אוהבים, ותן להם לבחור בין 2-3 אפשרויות.'
-  }
-  
-  // Default responses
-  const responses = [
-    'זה נשמע מעניין! ספר לי יותר על ההעדפות של הילדים',
-    'רעיון נהדר! האם כל הילדים אוהבים את זה?',
-    'מה דעתך לנסות גם משהו חדש השבוע?',
-    'חשוב שכל ילד יקבל מה שהוא אוהב. איך אוכל לעזור עוד?',
-    'אולי כדאי להכין רשימת קניות מהמנות שתכננת?'
-  ]
-  
-  return responses[Math.floor(Math.random() * responses.length)]
-}
-
-// Standard functions (addChild, addMenuItem, etc.) remain the same
-function addChild(event) {
-  event.preventDefault()
-  const name = document.getElementById('child-name').value
-  const age = document.getElementById('child-age').value
-  const preferences = document.getElementById('child-preferences').value
-  
-  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
-  const newChild = {
-    id: Date.now().toString(),
-    name: name,
-    age: age ? parseInt(age) : null,
-    preferences: preferences || null
-  }
-  
-  children.push(newChild)
-  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
-  closeModal()
-  loadAndRefreshData()
-}
-
-function addMenuItem(event) {
-  event.preventDefault()
-  const name = document.getElementById('menu-name').value
-  const prepTime = document.getElementById('prep-time').value
-  const checkboxes = document.querySelectorAll('#menu-form input[type="checkbox"]:checked')
-  const mealTypes = Array.from(checkboxes).map(cb => cb.value)
-  
-  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  const newItem = {
-    id: Date.now().toString(),
-    name: name,
-    mealTypes: mealTypes,
-    prepTime: prepTime ? parseInt(prepTime) : null
-  }
-  
-  menuItems.push(newItem)
-  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(menuItems))
-  closeModal()
-  loadAndRefreshData()
-}
-
-function removeChild(id) {
-  let children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
-  children = children.filter(child => child.id !== id)
-  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
-  
-  // Also remove all meals for this child
-  let weekPlan = JSON.parse(localStorage.getItem('mealPlannerWeekPlan') || '{}')
-  Object.keys(weekPlan).forEach(key => {
-    if (key.startsWith(id + '_')) {
-      delete weekPlan[key]
-    }
-  })
-  localStorage.setItem('mealPlannerWeekPlan', JSON.stringify(weekPlan))
-  
-  loadAndRefreshData()
-}
-
-function removeMenuItem(id) {
-  let menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  menuItems = menuItems.filter(item => item.id !== id)
-  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(menuItems))
-  loadAndRefreshData()
-}
-
-// Generic modal functions
-function showModal(title, content) {
-  const modal = document.createElement('div')
-  modal.id = 'modal'
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'
-  modal.innerHTML = `
-    <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <h3 class="text-lg font-bold mb-4">${title}</h3>
-      ${content}
-    </div>
-  `
-  document.body.appendChild(modal)
-}
-
-function closeModal() {
-  const modal = document.getElementById('modal')
-  if (modal) {
-    modal.remove()
-  }
-}
-
+// Add chat message
 function addChatMessage(sender, message) {
   const container = document.getElementById('chat-messages')
   if (!container) return
@@ -709,4 +929,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 })
 
-console.log('👨‍👩‍👧‍👦 מתכנן הארוחות המשפחתי נטען בהצלחה!')
+console.log('📱 קובץ JavaScript נטען בהצלחה')
