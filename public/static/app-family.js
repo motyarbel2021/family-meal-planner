@@ -1,6 +1,44 @@
 // Basic Working Meal Planner Application
 console.log('🚀 מאתחל את מתכנן הארוחות...')
 
+// Global state for week management
+let currentWeekOffset = 0 // 0 = current week, 1 = next week
+let weekStartDate = new Date()
+
+// Hebrew day names
+const hebrewDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+
+// Get current week start date (Sunday)
+function getCurrentWeekStart(offset = 0) {
+  const today = new Date()
+  const currentDay = today.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - currentDay + (offset * 7))
+  return weekStart
+}
+
+// Format date to Hebrew DD/MM format
+function formatHebrewDate(date) {
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  return `${day}/${month}`
+}
+
+// Get week dates with Hebrew day names
+function getWeekDatesWithNames(offset = 0) {
+  const weekStart = getCurrentWeekStart(offset)
+  return hebrewDays.map((dayName, index) => {
+    const date = new Date(weekStart)
+    date.setDate(weekStart.getDate() + index)
+    return {
+      name: dayName,
+      date: date,
+      formatted: formatHebrewDate(date),
+      fullDisplay: `${dayName} ${formatHebrewDate(date)}`
+    }
+  })
+}
+
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', function() {
   console.log('📄 DOM מוכן - מציג ממשק...')
@@ -50,10 +88,10 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="text-sm text-gray-500 mt-1">מה צריך לקנות</div>
         </button>
 
-        <button onclick="showWeeklyMenuModal()" class="btn btn-info text-center p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+        <button onclick="toggleWeekView()" class="btn btn-info text-center p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
           <i class="fas fa-calendar-alt text-2xl mb-2 block"></i>
-          <span class="font-medium">התפריט השבועי</span>
-          <div class="text-sm text-gray-500 mt-1">מה מתוכנן השבוע</div>
+          <span class="font-medium" id="week-toggle-text">השבוע הבא</span>
+          <div class="text-sm text-gray-500 mt-1" id="week-toggle-desc">תכנון לשבוע הבא</div>
         </button>
       </div>
 
@@ -62,25 +100,24 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold">
             <i class="fas fa-calendar-week mr-2"></i>
-            תכנון שבועי
+            <span id="week-title">תכנון שבועי</span>
           </h2>
-          <div id="week-summary" class="text-sm text-gray-600">
-            <!-- Week summary will be updated by JavaScript -->
+          <div class="flex flex-col items-end">
+            <div id="week-dates" class="text-sm text-gray-600 mb-1">
+              <!-- Week range will be displayed here -->
+            </div>
+            <div id="week-summary" class="text-sm text-gray-500">
+              <!-- Week summary will be updated by JavaScript -->
+            </div>
           </div>
         </div>
         <div class="overflow-x-auto bg-white rounded-lg shadow-sm border">
           <table class="w-full border-collapse">
             <thead>
-              <tr class="bg-gradient-to-l from-blue-50 to-blue-100">
+              <tr class="bg-gradient-to-l from-blue-50 to-blue-100" id="week-table-header">
                 <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[80px]">ארוחה</th>
                 <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[100px]">ילד</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">ראשון</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שני</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שלישי</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">רביעי</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">חמישי</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שישי</th>
-                <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">שבת</th>
+                <!-- Day headers will be updated by JavaScript -->
               </tr>
             </thead>
             <tbody id="week-table">
@@ -134,9 +171,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize weekly planning table
 function initWeekTable() {
-  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const weekDates = getWeekDatesWithNames(currentWeekOffset)
   const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
   const weekTable = document.getElementById('week-table')
+  
+  // Update week title and date range
+  updateWeekDisplay()
   
   if (!weekTable) return
   
@@ -146,7 +186,7 @@ function initWeekTable() {
   if (children.length === 0) {
     tableHTML = `
       <tr>
-        <td colspan="${days.length + 2}" class="text-center p-8 text-gray-500">
+        <td colspan="${weekDates.length + 2}" class="text-center p-8 text-gray-500">
           <i class="fas fa-users text-3xl mb-2 block"></i>
           <div class="mb-2">נא הוסף ילדים למשפחה תחילה</div>
           <button onclick="showAddChildModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
@@ -179,9 +219,9 @@ function initWeekTable() {
               <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center min-w-[80px]">
                 ${child.name}
               </td>
-              ${days.map(day => `
-                <td class="border border-gray-200 p-1 min-w-[100px] h-12" id="cell-${day}-${meal.name}-${child.id}">
-                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+              ${weekDates.map(dayInfo => `
+                <td class="border border-gray-200 p-1 min-w-[100px] h-12" id="cell-${dayInfo.name}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${dayInfo.name}', '${meal.name}', '${child.id}', '${child.name}')" 
                           class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
                     <i class="fas fa-plus"></i>
                   </button>
@@ -196,9 +236,9 @@ function initWeekTable() {
               <td class="border border-gray-200 p-2 bg-gray-100 font-medium text-center">
                 ${child.name}
               </td>
-              ${days.map(day => `
-                <td class="border border-gray-200 p-1 h-12" id="cell-${day}-${meal.name}-${child.id}">
-                  <button onclick="addMealForChild('${day}', '${meal.name}', '${child.id}', '${child.name}')" 
+              ${weekDates.map(dayInfo => `
+                <td class="border border-gray-200 p-1 h-12" id="cell-${dayInfo.name}-${meal.name}-${child.id}">
+                  <button onclick="addMealForChild('${dayInfo.name}', '${meal.name}', '${child.id}', '${child.name}')" 
                           class="w-full h-full border-2 border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors text-xs flex items-center justify-center">
                     <i class="fas fa-plus"></i>
                   </button>
@@ -212,6 +252,81 @@ function initWeekTable() {
   }
   
   weekTable.innerHTML = tableHTML
+}
+
+// Update week display (title, dates, header)
+function updateWeekDisplay() {
+  const weekDates = getWeekDatesWithNames(currentWeekOffset)
+  const isCurrentWeek = currentWeekOffset === 0
+  
+  // Update week title and toggle button
+  const weekTitle = document.getElementById('week-title')
+  const weekToggleText = document.getElementById('week-toggle-text')
+  const weekToggleDesc = document.getElementById('week-toggle-desc')
+  
+  if (weekTitle) {
+    weekTitle.textContent = isCurrentWeek ? 'תכנון השבוע הנוכחי' : 'תכנון לשבוע הבא'
+  }
+  
+  if (weekToggleText && weekToggleDesc) {
+    if (isCurrentWeek) {
+      weekToggleText.textContent = 'השבוע הבא'
+      weekToggleDesc.textContent = 'תכנון לשבוע הבא'
+    } else {
+      weekToggleText.textContent = 'השבוע הנוכחי'
+      weekToggleDesc.textContent = 'חזרה לשבוע הנוכחי'
+    }
+  }
+  
+  // Update week date range display
+  const weekDatesElement = document.getElementById('week-dates')
+  if (weekDatesElement) {
+    const startDate = weekDates[0].date
+    const endDate = weekDates[6].date
+    weekDatesElement.textContent = `${formatHebrewDate(startDate)} - ${formatHebrewDate(endDate)}`
+  }
+  
+  // Update table headers with dates
+  const tableHeader = document.getElementById('week-table-header')
+  if (tableHeader) {
+    // Keep the first two headers (ארוחה, ילד) and update day headers
+    const dayHeaders = weekDates.map(dayInfo => 
+      `<th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[120px]">
+        <div class="flex flex-col">
+          <span class="font-bold">${dayInfo.name}</span>
+          <span class="text-xs font-normal text-blue-600">${dayInfo.formatted}</span>
+        </div>
+      </th>`
+    ).join('')
+    
+    tableHeader.innerHTML = `
+      <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[80px]">ארוחה</th>
+      <th class="border border-gray-200 p-3 font-medium text-blue-800 min-w-[100px]">ילד</th>
+      ${dayHeaders}
+    `
+  }
+}
+
+// Toggle between current week and next week
+function toggleWeekView() {
+  currentWeekOffset = currentWeekOffset === 0 ? 1 : 0
+  
+  // Reinitialize the table with new week data
+  initWeekTable()
+  
+  // Reload meal data for the new week
+  loadWeeklyPlan()
+  
+  console.log(`🗓️ הוחלף לתצוגת ${currentWeekOffset === 0 ? 'השבוע הנוכחי' : 'השבוע הבא'}`)
+}
+
+// Get storage key for specific week
+function getWeekStorageKey(offset = 0) {
+  const weekStart = getCurrentWeekStart(offset)
+  const year = weekStart.getFullYear()
+  const month = (weekStart.getMonth() + 1).toString().padStart(2, '0')
+  const day = weekStart.getDate().toString().padStart(2, '0')
+  return `week_${year}_${month}_${day}`
 }
 
 // Load saved data from localStorage
@@ -543,11 +658,17 @@ function saveMealForChild(event, day, mealTime, childId) {
   const child = children.find(c => c.id === childId)
   
   if (selectedMeal && child) {
-    // Save to weekly menu structure with child info
-    let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
-    const key = `${day}_${mealTime}_${childId}`
+    // Save to weekly menu structure with week offset and child info
+    const weekKey = getWeekStorageKey(currentWeekOffset)
+    let weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
     
-    weeklyMenu[key] = {
+    if (!weeklyMenus[weekKey]) {
+      weeklyMenus[weekKey] = {}
+    }
+    
+    const mealKey = `${day}_${mealTime}_${childId}`
+    
+    weeklyMenus[weekKey][mealKey] = {
       mealId: selectedMeal.id,
       mealName: selectedMeal.name,
       childId: childId,
@@ -556,8 +677,10 @@ function saveMealForChild(event, day, mealTime, childId) {
       isPreferred: child.preferences && child.preferences.includes(selectedMeal.name)
     }
     
-    localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
-    alert(`נוסף: ${selectedMeal.name} עבור ${child.name} ביום ${day}, ארוחת ${mealTime}`)
+    localStorage.setItem('mealPlannerWeeklyMenus', JSON.stringify(weeklyMenus))
+    
+    const weekDisplayText = currentWeekOffset === 0 ? 'השבוע הנוכחי' : 'השבוע הבא'
+    alert(`נוסף: ${selectedMeal.name} עבור ${child.name} ביום ${day}, ארוחת ${mealTime} ב${weekDisplayText}`)
     
     // Update the visual cell and summary
     updateMealCellForChild(day, mealTime, childId)
@@ -574,7 +697,9 @@ function saveMeal(event, day, mealTime) {
 
 // Update meal cell display for specific child
 function updateMealCellForChild(day, mealTime, childId) {
-  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const weekKey = getWeekStorageKey(currentWeekOffset)
+  const weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  const weeklyMenu = weeklyMenus[weekKey] || {}
   const key = `${day}_${mealTime}_${childId}`
   const mealData = weeklyMenu[key]
   
@@ -619,14 +744,15 @@ function updateMealCell(day, mealTime) {
 
 // Remove meal for specific child
 function removeMealForChild(day, mealTime, childId) {
-  let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const weekKey = getWeekStorageKey(currentWeekOffset)
+  let weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
   const key = `${day}_${mealTime}_${childId}`
   
-  if (weeklyMenu[key]) {
-    delete weeklyMenu[key]
+  if (weeklyMenus[weekKey] && weeklyMenus[weekKey][key]) {
+    delete weeklyMenus[weekKey][key]
   }
   
-  localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
+  localStorage.setItem('mealPlannerWeeklyMenus', JSON.stringify(weeklyMenus))
   updateMealCellForChild(day, mealTime, childId)
   updateWeekSummary()
 }
@@ -638,7 +764,9 @@ function removeMealFromPlan(day, mealTime, mealId) {
 
 // Load and display existing weekly plan
 function loadWeeklyPlan() {
-  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const weekKey = getWeekStorageKey(currentWeekOffset)
+  const weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  const weeklyMenu = weeklyMenus[weekKey] || {}
   const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
   const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
   const mealTypes = ['בוקר', 'צהריים', 'ערב']
@@ -666,31 +794,35 @@ function refreshAllDisplays() {
 
 // Update week summary
 function updateWeekSummary() {
-  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const weekKey = getWeekStorageKey(currentWeekOffset)
+  const weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  const weeklyMenu = weeklyMenus[weekKey] || {}
   const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
   
-  const totalMeals = Object.values(weeklyMenu).reduce((sum, meals) => sum + meals.length, 0)
+  const totalMeals = Object.keys(weeklyMenu).length
   const summaryEl = document.getElementById('week-summary')
   
   if (summaryEl) {
     if (totalMeals > 0) {
+      const weekDisplayText = currentWeekOffset === 0 ? 'השבוע הנוכחי' : 'השבוע הבא'
       summaryEl.innerHTML = `
         <div class="flex items-center gap-4 text-sm">
           <div class="bg-blue-100 px-2 py-1 rounded">
             <i class="fas fa-utensils mr-1"></i>
-            ${totalMeals} ארוחות מתוכננות
+            ${totalMeals} ארוחות ב${weekDisplayText}
           </div>
           <div class="bg-green-100 px-2 py-1 rounded">
             <i class="fas fa-users mr-1"></i>
-            ${children.length} ילדים במשפחה
+            ${children.length} ילדים
           </div>
         </div>
       `
     } else {
+      const weekDisplayText = currentWeekOffset === 0 ? 'השבוע הנוכחי' : 'השבוע הבא'
       summaryEl.innerHTML = `
         <div class="text-gray-500 text-sm">
           <i class="fas fa-info-circle mr-1"></i>
-          לא נוספו ארוחות עדיין
+          לא נוספו ארוחות ב${weekDisplayText}
         </div>
       `
     }
@@ -889,18 +1021,183 @@ function sendMessage() {
   addChatMessage('אתה', message)
   input.value = ''
   
-  // Simple chatbot responses
+  // Try to parse Hebrew meal assignment commands
   setTimeout(() => {
-    const responses = [
-      'זה נשמע נהדר! מה עוד תרצה לתכנן?',
-      'רעיון מעולה! אולי כדאי להוסיף גם ירקות?',
-      'נחמד! האם יש העדפות מיוחדות לילדים?',
-      'מושלם! אל תשכח לשתות הרבה מים',
-      'איך אוכל לעזור לך עוד בתכנון?'
-    ]
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-    addChatMessage('עוזר', randomResponse)
-  }, 1000)
+    const result = parseHebrewMealCommand(message)
+    
+    if (result.success) {
+      // Execute the meal assignment
+      executeMealAssignment(result)
+    } else {
+      // Default chatbot responses if no command recognized
+      const responses = [
+        'אני כאן לעזור! נסה לכתוב בצורה: "תשבץ ל[שם ילד] בימים [ימים] [שם מנה]"',
+        'אני יכול לעזור לך לשבץ מנות! למשל: "תשבץ לאורי בימים ראשון ושלישי חביתה"',
+        'האם אתה רוצה לשבץ מנה? כתוב לי בצורה: "תשבץ ל[שם] ביום [יום] [מנה]"',
+        'אני מבין פקודות שיבוץ. נסה לשאול: "תשבץ למיה ביום שבת מרק"'
+      ]
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+      addChatMessage('עוזר', randomResponse)
+    }
+  }, 500)
+}
+
+// Parse Hebrew meal assignment commands
+function parseHebrewMealCommand(message) {
+  // Normalize message - remove extra spaces and convert to lowercase
+  const normalized = message.trim().replace(/\s+/g, ' ')
+  
+  // Pattern: "תשבץ ל<שם ילד> בימים <ימים> <שם מנה>"
+  // Examples: "תשבץ לאורי בימים ראשון ושלישי חביתה"
+  //          "תשבץ למיה ביום שבת מרק"
+  
+  // Regular expression to match the pattern
+  const patterns = [
+    // תשבץ ל<שם> בימים <ימים> <מנה>
+    /תשבץ\s+ל(\S+)\s+בימים\s+(.+?)\s+(.+)/,
+    // תשבץ ל<שם> ביום <יום> <מנה>
+    /תשבץ\s+ל(\S+)\s+ביום\s+(\S+)\s+(.+)/,
+    // שבץ ל<שם> <ימים> <מנה>
+    /שבץ\s+ל(\S+)\s+(.+?)\s+(.+)/
+  ]
+  
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern)
+    if (match) {
+      const childName = match[1]
+      let daysText = match[2]
+      const dishName = match[3]
+      
+      // Handle single day case ("ביום")
+      if (pattern.source.includes('ביום')) {
+        daysText = match[2] // Single day
+      }
+      
+      // Parse days
+      const days = parseDays(daysText)
+      
+      if (days.length > 0) {
+        return {
+          success: true,
+          childName: childName,
+          days: days,
+          dishName: dishName
+        }
+      }
+    }
+  }
+  
+  return { success: false }
+}
+
+// Parse Hebrew day names and combinations
+function parseDays(daysText) {
+  const dayMappings = {
+    'ראשון': 'ראשון',
+    'שני': 'שני',
+    'שלישי': 'שלישי',
+    'רביעי': 'רביעי',
+    'חמישי': 'חמישי',
+    'שישי': 'שישי',
+    'שבת': 'שבת'
+  }
+  
+  const days = []
+  
+  // Split by "ו" (and) and other separators
+  const parts = daysText.split(/\s*[ו,]\s*|\s+ו\s+/)
+  
+  for (const part of parts) {
+    const trimmed = part.trim()
+    if (dayMappings[trimmed]) {
+      days.push(dayMappings[trimmed])
+    }
+  }
+  
+  return days
+}
+
+// Execute meal assignment from chatbot command
+function executeMealAssignment(result) {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  // Find child by name (case-insensitive)
+  const child = children.find(c => 
+    c.name.toLowerCase() === result.childName.toLowerCase()
+  )
+  
+  if (!child) {
+    addChatMessage('עוזר', `לא מצאתי ילד בשם "${result.childName}". הילדים הרשומים: ${children.map(c => c.name).join(', ')}`)
+    return
+  }
+  
+  // Find dish by name (case-insensitive, partial match)
+  const dish = menuItems.find(item => 
+    item.name.toLowerCase().includes(result.dishName.toLowerCase()) ||
+    result.dishName.toLowerCase().includes(item.name.toLowerCase())
+  )
+  
+  if (!dish) {
+    addChatMessage('עוזר', `לא מצאתי מנה בשם "${result.dishName}". המנות הזמינות: ${menuItems.map(m => m.name).join(', ')}`)
+    return
+  }
+  
+  // Assign meal for each day
+  const weekKey = getWeekStorageKey(currentWeekOffset)
+  let weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  
+  if (!weeklyMenus[weekKey]) {
+    weeklyMenus[weekKey] = {}
+  }
+  
+  let assignedCount = 0
+  const weekDisplayText = currentWeekOffset === 0 ? 'השבוע הנוכחי' : 'השבוע הבא'
+  
+  // Try to assign to lunch time first, then dinner, then breakfast
+  const mealTimes = ['צהריים', 'ערב', 'בוקר']
+  
+  for (const day of result.days) {
+    let assigned = false
+    
+    // Check if dish is suitable for specific meal times
+    for (const mealTime of mealTimes) {
+      if (dish.mealTypes.length === 0 || dish.mealTypes.includes(mealTime)) {
+        const mealKey = `${day}_${mealTime}_${child.id}`
+        
+        weeklyMenus[weekKey][mealKey] = {
+          mealId: dish.id,
+          mealName: dish.name,
+          childId: child.id,
+          childName: child.name,
+          addedAt: new Date().toISOString(),
+          isPreferred: child.preferences && child.preferences.includes(dish.name),
+          assignedByChat: true
+        }
+        
+        assignedCount++
+        assigned = true
+        
+        // Update visual display
+        updateMealCellForChild(day, mealTime, child.id)
+        break // Only assign to one meal time per day
+      }
+    }
+    
+    if (!assigned) {
+      addChatMessage('עוזר', `לא יכולתי לשבץ את "${dish.name}" ליום ${day} - המנה לא מתאימה לארוחות הזמינות`)
+    }
+  }
+  
+  localStorage.setItem('mealPlannerWeeklyMenus', JSON.stringify(weeklyMenus))
+  updateWeekSummary()
+  
+  if (assignedCount > 0) {
+    const daysText = result.days.join(' ו')
+    addChatMessage('עוזר', `מעולה! שיבצתי את "${dish.name}" ל${child.name} בימים ${daysText} ב${weekDisplayText} (סך הכל ${assignedCount} שיבוצים) ✓`)
+  } else {
+    addChatMessage('עוזר', 'לא הצלחתי לשבץ את המנה. בדוק שהמנה מתאימה לארוחות הנדרשות.')
+  }
 }
 
 // Add chat message
