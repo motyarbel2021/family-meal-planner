@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
 
       <!-- Action Buttons -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <button onclick="showAddChildModal()" class="btn btn-primary text-center p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all">
           <i class="fas fa-child text-2xl mb-2 block"></i>
           <span class="font-medium">הוסף ילד</span>
@@ -48,6 +48,12 @@ document.addEventListener('DOMContentLoaded', function() {
           <i class="fas fa-shopping-cart text-2xl mb-2 block"></i>
           <span class="font-medium">רשימת קניות</span>
           <div class="text-sm text-gray-500 mt-1">מה צריך לקנות</div>
+        </button>
+
+        <button onclick="showWeeklyMenuModal()" class="btn btn-info text-center p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+          <i class="fas fa-calendar-alt text-2xl mb-2 block"></i>
+          <span class="font-medium">התפריט השבועי</span>
+          <div class="text-sm text-gray-500 mt-1">מה מתוכנן השבוע</div>
         </button>
       </div>
 
@@ -107,6 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load saved data
   loadSavedData()
   
+  // Load existing weekly plan
+  loadWeeklyPlan()
+  
   console.log('✅ האפליקציה נטענה בהצלחה!')
 })
 
@@ -146,6 +155,7 @@ function initWeekTable() {
 function loadSavedData() {
   const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
   const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
   
   updateChildrenList(children)
   updateMenuList(menuItems)
@@ -163,13 +173,22 @@ function updateChildrenList(children) {
   
   container.innerHTML = children.map(child => `
     <div class="flex justify-between items-center p-3 bg-gray-50 rounded border">
-      <div>
+      <div class="flex-1">
         <span class="font-medium">${child.name}</span>
         ${child.age ? `<span class="text-sm text-gray-500 mr-2">(גיל ${child.age})</span>` : ''}
+        ${child.preferences && child.preferences.length > 0 ? 
+          `<div class="text-xs text-blue-600 mt-1">העדפות: ${child.preferences.join(', ')}</div>` : 
+          '<div class="text-xs text-gray-400 mt-1">אין העדפות</div>'
+        }
       </div>
-      <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700">
-        <i class="fas fa-trash"></i>
-      </button>
+      <div class="flex gap-2">
+        <button onclick="manageChildPreferences('${child.id}')" class="text-blue-500 hover:text-blue-700 text-sm">
+          <i class="fas fa-heart"></i>
+        </button>
+        <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
     </div>
   `).join('')
 }
@@ -446,11 +465,275 @@ function saveMeal(event, day, mealTime) {
   const selectedMeal = menuItems.find(item => item.id === mealId)
   
   if (selectedMeal) {
+    // Save to weekly menu structure
+    let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+    const key = `${day}_${mealTime}`
+    
+    if (!weeklyMenu[key]) {
+      weeklyMenu[key] = []
+    }
+    
+    weeklyMenu[key].push({
+      id: selectedMeal.id,
+      name: selectedMeal.name,
+      addedAt: new Date().toISOString()
+    })
+    
+    localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
     alert(`נוסף: ${selectedMeal.name} ליום ${day}, ארוחת ${mealTime}`)
-    // Here you would save to a weekly plan structure
+    
+    // Update the visual cell
+    updateMealCell(day, mealTime)
   }
   
   closeModal()
+}
+
+// Update meal cell display
+function updateMealCell(day, mealTime) {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const key = `${day}_${mealTime}`
+  const meals = weeklyMenu[key] || []
+  
+  // Find the cell and update it
+  const cells = document.querySelectorAll('td')
+  cells.forEach(cell => {
+    const button = cell.querySelector('button')
+    if (button && button.getAttribute('onclick') && button.getAttribute('onclick').includes(`'${day}', '${mealTime}'`)) {
+      if (meals.length > 0) {
+        cell.innerHTML = `
+          <div class="text-sm">
+            ${meals.map(meal => `
+              <div class="bg-blue-100 p-1 rounded mb-1 flex justify-between items-center">
+                <span>${meal.name}</span>
+                <button onclick="removeMealFromPlan('${day}', '${mealTime}', '${meal.id}')" class="text-red-500 text-xs">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            `).join('')}
+            <button onclick="addMeal('${day}', '${mealTime}')" class="w-full p-1 border border-dashed border-gray-300 rounded text-gray-500 hover:border-blue-400 text-xs">
+              <i class="fas fa-plus mr-1"></i>
+              הוסף עוד
+            </button>
+          </div>
+        `
+      }
+    }
+  })
+}
+
+// Remove meal from weekly plan
+function removeMealFromPlan(day, mealTime, mealId) {
+  let weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const key = `${day}_${mealTime}`
+  
+  if (weeklyMenu[key]) {
+    weeklyMenu[key] = weeklyMenu[key].filter(meal => meal.id !== mealId)
+    if (weeklyMenu[key].length === 0) {
+      delete weeklyMenu[key]
+    }
+  }
+  
+  localStorage.setItem('mealPlannerWeeklyMenu', JSON.stringify(weeklyMenu))
+  updateMealCell(day, mealTime)
+  
+  // If cell is now empty, restore the add button
+  if (!weeklyMenu[key] || weeklyMenu[key].length === 0) {
+    initWeekTable()
+    loadWeeklyPlan()
+  }
+}
+
+// Load and display existing weekly plan
+function loadWeeklyPlan() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  
+  Object.keys(weeklyMenu).forEach(key => {
+    const [day, mealTime] = key.split('_')
+    updateMealCell(day, mealTime)
+  })
+}
+
+// Manage child preferences
+function manageChildPreferences(childId) {
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const child = children.find(c => c.id === childId)
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  if (!child) return
+  
+  const currentPreferences = child.preferences || []
+  
+  const menuOptions = menuItems.map(item => 
+    `<label class="flex items-center p-2 hover:bg-gray-50 rounded">
+      <input type="checkbox" value="${item.id}" ${currentPreferences.includes(item.name) ? 'checked' : ''} class="ml-2">
+      <span>${item.name}</span>
+    </label>`
+  ).join('')
+  
+  showModal(`העדפות אוכל עבור ${child.name}`, `
+    <form onsubmit="saveChildPreferences(event, '${childId}')">
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 mb-3">בחר את המנות שהילד אוהב:</p>
+        <div class="max-h-48 overflow-y-auto border border-gray-200 rounded p-2">
+          ${menuOptions || '<p class="text-gray-500">אין מנות במאגר עדיין</p>'}
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">שמור</button>
+        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">ביטול</button>
+      </div>
+    </form>
+  `)
+}
+
+// Save child preferences
+function saveChildPreferences(event, childId) {
+  event.preventDefault()
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const childIndex = children.findIndex(c => c.id === childId)
+  
+  if (childIndex === -1) return
+  
+  const checkedItems = document.querySelectorAll('input[type="checkbox"]:checked')
+  const selectedItemIds = Array.from(checkedItems).map(cb => cb.value)
+  const selectedItemNames = selectedItemIds.map(id => {
+    const item = menuItems.find(m => m.id === id)
+    return item ? item.name : null
+  }).filter(name => name)
+  
+  children[childIndex].preferences = selectedItemNames
+  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
+  updateChildrenList(children)
+  closeModal()
+}
+
+// Show weekly menu modal
+function showWeeklyMenuModal() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
+  const mealTypes = ['בוקר', 'צהריים', 'ערב']
+  
+  let menuContent = '<div class="text-center text-gray-500 py-4">לא נוסף תפריט עדיין</div>'
+  
+  if (Object.keys(weeklyMenu).length > 0) {
+    menuContent = `
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200 text-sm">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="border border-gray-200 p-2">יום</th>
+              <th class="border border-gray-200 p-2">ארוחת בוקר</th>
+              <th class="border border-gray-200 p-2">ארוחת צהריים</th>
+              <th class="border border-gray-200 p-2">ארוחת ערב</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${days.map(day => `
+              <tr>
+                <td class="border border-gray-200 p-2 font-medium bg-gray-50">${day}</td>
+                ${mealTypes.map(mealTime => {
+                  const key = `${day}_${mealTime}`
+                  const meals = weeklyMenu[key] || []
+                  return `<td class="border border-gray-200 p-2">
+                    ${meals.length > 0 ? 
+                      meals.map(meal => `<div class="bg-blue-100 p-1 rounded mb-1 text-xs">${meal.name}</div>`).join('') :
+                      '<span class="text-gray-400 text-xs">לא נבחר</span>'
+                    }
+                  </td>`
+                }).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `
+  }
+  
+  showModal('התפריט השבועי המתוכנן', `
+    <div class="mb-4">
+      <h4 class="font-medium mb-3">סקירת התפריט השבועי:</h4>
+      ${menuContent}
+    </div>
+    <div class="flex gap-3">
+      <button onclick="generateGroceryList()" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <i class="fas fa-shopping-cart mr-1"></i>
+        צור רשימת קניות
+      </button>
+      <button onclick="closeModal()" class="flex-1 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
+    </div>
+  `)
+}
+
+// Generate smart grocery list based on weekly menu
+function generateGroceryList() {
+  const weeklyMenu = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenu') || '{}')
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  
+  // Count meal occurrences
+  const mealCounts = {}
+  Object.values(weeklyMenu).forEach(meals => {
+    meals.forEach(meal => {
+      mealCounts[meal.name] = (mealCounts[meal.name] || 0) + 1
+    })
+  })
+  
+  // Basic grocery mapping
+  const groceryMapping = {
+    'פסטה': ['פסטה', 'רוטב עגבניות', 'גבינה מגוררת'],
+    'אורז': ['אורז', 'ירקות מעורבים'],
+    'סלט': ['מלפפון', 'עגבניות', 'חסה', 'בצל'],
+    'פיתה': ['פיתה', 'חומוס', 'טחינה'],
+    'ביצים': ['ביצים', 'לחם', 'חמאה'],
+    'דגים': ['דגים', 'לימון', 'תבלינים'],
+    'עוף': ['עוף', 'בצל', 'שמן'],
+    'מרק': ['ירקות למרק', 'קוביות מרק'],
+  }
+  
+  let groceryList = new Set()
+  
+  // Add basic staples
+  ['לחם', 'חלב', 'ביצים', 'שמן', 'מלח', 'פלפל'].forEach(item => groceryList.add(item))
+  
+  // Add items based on planned meals
+  Object.keys(mealCounts).forEach(mealName => {
+    const count = mealCounts[mealName]
+    
+    // Try to match with grocery mapping
+    Object.keys(groceryMapping).forEach(key => {
+      if (mealName.includes(key) || key.includes(mealName)) {
+        groceryMapping[key].forEach(item => {
+          groceryList.add(`${item}${count > 1 ? ` (x${count})` : ''}`)
+        })
+      }
+    })
+  })
+  
+  closeModal()
+  
+  // Show enhanced grocery list
+  showModal('רשימת קניות חכמה', `
+    <div class="mb-4">
+      <h4 class="font-medium mb-3">רשימת קניות מבוססת על התפריט השבועי:</h4>
+      <div class="bg-gray-50 p-4 rounded max-h-64 overflow-y-auto">
+        ${groceryList.size > 0 ? `
+          <div class="grid grid-cols-1 gap-2">
+            ${Array.from(groceryList).map(item => `
+              <label class="flex items-center p-1 hover:bg-white rounded">
+                <input type="checkbox" class="ml-2">
+                <span class="text-sm">${item}</span>
+              </label>
+            `).join('')}
+          </div>
+        ` : '<p class="text-gray-500 text-center">לא נמצאו פריטים לרשימת קניות</p>'}
+      </div>
+      <p class="text-xs text-gray-500 mt-3">
+        💡 הרשימה מבוססת על המנות שתכננת השבוע
+      </p>
+    </div>
+    <button onclick="closeModal()" class="w-full bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">סגור</button>
+  `)
 }
 
 // Send chat message
