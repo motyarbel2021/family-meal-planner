@@ -213,7 +213,7 @@ export const renderer = jsxRenderer(({ children }) => {
         </footer>
 
         {/* Main Application JavaScript */}
-        <script src="/static/app-basic.js"></script>
+        <script src="/static/app-family.js"></script>
         <script src="/static/privacy.js"></script>
       </body>
     </html>
