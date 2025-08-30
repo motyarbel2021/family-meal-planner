@@ -111,6 +111,7 @@ export const renderer = jsxRenderer(({ children }) => {
 
         {/* Main Application JavaScript */}
         <script src="/static/app.js"></script>
+        <script src="/static/privacy.js"></script>
       </body>
     </html>
   )
