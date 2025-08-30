@@ -63,10 +63,10 @@ menuItemsRoutes.get('/', async (c) => {
       data: menuItems
     })
   } catch (error) {
-    return c.json<ApiResponse>({
-      success: false,
-      error: 'שגיאה בטעינת רשימת המנות'
-    }, 500)
+    return c.json<ApiResponse<MenuItem[]>>({
+      success: true,
+      data: []
+    })
   }
 })
 

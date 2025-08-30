@@ -427,6 +427,29 @@ weekPlanRoutes.get('/', async (c) => {
 // Helper function to get week plan by ID
 async function getWeekPlanById(c: any, weekId: string, weekRange?: any): Promise<Response> {
   try {
+    // Check if database is available
+    if (!c.env?.DB) {
+      // Return empty week plan when DB is not available
+      const range = weekRange || getCurrentWeek()
+      const emptyWeekPlan: WeekPlan = {
+        weekId,
+        children: [],
+        days: range.days.map((date: string) => ({
+          date,
+          breakfast: { byChild: {} },
+          lunch: [],
+          dinner: []
+        })),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      return c.json<ApiResponse<WeekPlan>>({
+        success: true,
+        data: emptyWeekPlan
+      })
+    }
+
     // Get week plan
     const { results: weekResults } = await c.env.DB.prepare(
       'SELECT * FROM week_plans WHERE week_id = ?'
