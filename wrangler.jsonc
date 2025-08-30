@@ -8,7 +8,7 @@
     {
       "binding": "DB",
       "database_name": "family-meal-planner-db",
-      "database_id": "local-dev"
+      "database_id": "50a96bda-eb9b-4b3b-a534-7a7a26302e22"
     }
   ]
 }
