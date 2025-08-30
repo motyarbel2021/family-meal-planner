@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "meal-planner-db",
-      "database_id": "TBD"
+      "database_id": "local-dev"
     }
   ]
 }

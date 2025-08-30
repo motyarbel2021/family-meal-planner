@@ -72,6 +72,23 @@ export const renderer = jsxRenderer(({ children }) => {
           .input {
             @apply border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
           }
+          .modal-backdrop {
+            backdrop-filter: blur(2px);
+          }
+          .modal-content {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalSlideIn 0.3s ease-out;
+          }
+          @keyframes modalSlideIn {
+            from {
+              opacity: 0;
+              transform: translateY(-20px) scale(0.95);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
         `}} />
       </head>
       <body className="bg-gray-50 rtl">
@@ -112,7 +129,7 @@ export const renderer = jsxRenderer(({ children }) => {
         </footer>
 
         {/* Main Application JavaScript */}
-        <script src="/static/app.js"></script>
+        <script src="/static/app-full.js"></script>
         <script src="/static/privacy.js"></script>
       </body>
     </html>

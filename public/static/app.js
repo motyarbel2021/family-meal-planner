@@ -28,16 +28,21 @@ class MealPlannerApp {
   }
 
   async checkPrivacyConsent() {
+    console.log('בודק הסכמת פרטיות...')
     try {
       const response = await axios.get('/api/privacy/consent')
+      console.log('תגובת API פרטיות:', response.data)
       if (response.data.success) {
         this.hasConsent = response.data.data.hasConsented
+        console.log('הסכמה מקורית:', this.hasConsent)
         // Always allow access - privacy consent is optional
         this.hasConsent = true
+        console.log('הסכמה אחרי דריסה:', this.hasConsent)
         
         // Show privacy notice only on first visit
         const hasSeenNotice = localStorage.getItem('hasSeenPrivacyNotice')
         if (!hasSeenNotice) {
+          console.log('מציג הודעת פרטיות לראשונה')
           this.showPrivacyNotice()
           localStorage.setItem('hasSeenPrivacyNotice', 'true')
         }
@@ -46,33 +51,50 @@ class MealPlannerApp {
       console.error('שגיאה בבדיקת הסכמת פרטיות:', error)
       // Continue anyway - privacy is not blocking
       this.hasConsent = true
+      console.log('קבע הסכמה ב-catch:', this.hasConsent)
     }
+    console.log('סיום בדיקת פרטיות, hasConsent:', this.hasConsent)
   }
 
   async loadInitialData() {
+    console.log('מתחיל לטעון נתונים...')
     this.showLoading(true)
     
     try {
       // Load children, menu items, and current week plan
+      console.log('שולח בקשות ל-API...')
       const [childrenRes, menuItemsRes, weekPlanRes] = await Promise.all([
         axios.get('/api/children'),
         axios.get('/api/menu-items?activeOnly=true'),
         axios.get('/api/week-plan/current')
       ])
 
+      console.log('קיבל תגובות מ-API:', { 
+        children: childrenRes.data.data?.length, 
+        menuItems: menuItemsRes.data.data?.length,
+        weekPlan: weekPlanRes.data.data 
+      })
+
       if (childrenRes.data.success) {
         this.children = childrenRes.data.data
+        console.log('טען ילדים:', this.children.length)
       }
 
       if (menuItemsRes.data.success) {
         this.menuItems = menuItemsRes.data.data
+        console.log('טען מנות:', this.menuItems.length)
       }
 
-      if (weekPlanRes.data.success) {
+      if (weekPlanRes.data.success && weekPlanRes.data.data) {
         this.currentWeekPlan = weekPlanRes.data.data
         this.currentWeek = this.generateWeekDays(this.currentWeekPlan.days[0]?.date)
+      } else {
+        // No current week plan - use current date
+        this.currentWeek = this.generateWeekDays()
+        console.log('אין תכנון שבוע, משתמש בתאריך נוכחי')
       }
 
+      console.log('נתונים נטענו בהצלחה!')
     } catch (error) {
       console.error('שגיאה בטעינת נתונים:', error)
       this.showError('שגיאה בטעינת הנתונים הבסיסיים')
@@ -82,8 +104,12 @@ class MealPlannerApp {
   }
 
   renderMainInterface() {
+    console.log('מתחיל לרנדר את הממשק הראשי...')
     const appContainer = document.getElementById('app')
-    if (!appContainer) return
+    if (!appContainer) {
+      console.error('לא נמצא אלמנט #app!')
+      return
+    }
 
     appContainer.innerHTML = `
       <!-- Action Buttons -->
@@ -753,7 +779,6 @@ class MealPlannerApp {
       `
     }).join('')
   }
-}
 
   // Form submission methods
   async submitAddChild() {
