@@ -50,6 +50,105 @@ weekPlanRoutes.get('/:weekId', async (c) => {
   }
 })
 
+// Create new week plan
+weekPlanRoutes.post('/', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { weekStartDate, children, days } = body
+
+    if (!weekStartDate) {
+      return c.json<ApiResponse>({
+        success: false,
+        error: 'תאריך התחלת השבוע חסר'
+      }, 400)
+    }
+
+    if (!children || !Array.isArray(children)) {
+      return c.json<ApiResponse>({
+        success: false,
+        error: 'רשימת ילדים לא תקינה'
+      }, 400)
+    }
+
+    if (!days || !Array.isArray(days)) {
+      return c.json<ApiResponse>({
+        success: false,
+        error: 'רשימת ימים לא תקינה'
+      }, 400)
+    }
+
+    // Generate week ID from start date
+    const weekId = generateWeekId(weekStartDate)
+    const now = new Date().toISOString()
+
+    try {
+      // Check if week plan already exists
+      const { results: existingWeek } = await c.env.DB.prepare(
+        'SELECT week_id FROM week_plans WHERE week_id = ?'
+      ).bind(weekId).all()
+
+      if (existingWeek.length > 0) {
+        return c.json<ApiResponse>({
+          success: false,
+          error: 'תכנון שבוע כבר קיים לתאריך זה'
+        }, 409)
+      }
+
+      // Calculate week end date
+      const weekRange = getWeekRange(new Date(weekStartDate))
+
+      // Insert week plan
+      await c.env.DB.prepare(`
+        INSERT INTO week_plans (week_id, children_data, start_date, end_date, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).bind(
+        weekId,
+        JSON.stringify(children),
+        weekRange.startDate,
+        weekRange.endDate,
+        now,
+        now
+      ).run()
+
+      // Insert day plans
+      for (const day of days) {
+        await c.env.DB.prepare(`
+          INSERT INTO day_plans (
+            id, week_id, date, breakfast_data, lunch_data, dinner_data, 
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          generateId(),
+          weekId,
+          day.date,
+          JSON.stringify(day.breakfast || {}),
+          JSON.stringify(day.lunch || []),
+          JSON.stringify(day.dinner || []),
+          now,
+          now
+        ).run()
+      }
+
+      // Return the created week plan
+      return await getWeekPlanById(c, weekId, weekRange)
+
+    } catch (dbError) {
+      console.error('Database error:', dbError)
+      return c.json<ApiResponse>({
+        success: false,
+        error: 'שגיאה בשמירת התכנית השבועית'
+      }, 500)
+    }
+
+  } catch (error) {
+    console.error('Week plan creation error:', error)
+    return c.json<ApiResponse>({
+      success: false,
+      error: 'שגיאה ביצירת התכנית השבועית'
+    }, 500)
+  }
+})
+
 // Create or update week plan
 weekPlanRoutes.put('/:weekId', async (c) => {
   try {

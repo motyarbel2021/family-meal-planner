@@ -89,6 +89,90 @@ export const renderer = jsxRenderer(({ children }) => {
               transform: translateY(0) scale(1);
             }
           }
+          .week-planning-container {
+            overflow-x: auto;
+          }
+          .meal-slot {
+            min-width: 150px;
+            transition: all 0.2s ease;
+          }
+          .meal-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          }
+          .meal-selection {
+            transition: all 0.2s ease;
+          }
+          .meal-selection:hover {
+            background-color: #f8f9fa;
+          }
+          .add-meal-btn {
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+          }
+          .meal-slot:hover .add-meal-btn {
+            opacity: 1;
+          }
+          .btn-xs {
+            @apply px-2 py-1 text-xs rounded;
+          }
+          
+          /* Chatbot-specific styles */
+          .chat-message {
+            animation: slideIn 0.3s ease-out;
+          }
+          
+          @keyframes slideIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .animation-delay-200 {
+            animation-delay: 200ms;
+          }
+          
+          .animation-delay-400 {
+            animation-delay: 400ms;
+          }
+          
+          .quick-action-btn {
+            transition: all 0.2s ease;
+          }
+          
+          .quick-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          
+          .suggestion-btn {
+            transition: all 0.2s ease;
+          }
+          
+          .suggestion-btn:hover {
+            transform: translateX(-2px);
+          }
+          
+          #chat-messages {
+            scroll-behavior: smooth;
+          }
+          
+          @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40%, 43% {
+              transform: translateY(-8px);
+            }
+            70% {
+              transform: translateY(-4px);
+            }
+          }
         `}} />
       </head>
       <body className="bg-gray-50 rtl">
@@ -119,7 +203,7 @@ export const renderer = jsxRenderer(({ children }) => {
         
         <footer className="bg-gray-800 text-white text-center py-4 mt-8">
           <div className="container mx-auto px-4">
-            <p>&copy; 2024 מתכנן הארוחות המשפחתי</p>
+            <p>&copy; 2025 מתכנן הארוחות המשפחתי</p>
             <p className="text-sm text-gray-400 mt-1">
               <a href="/privacy" className="hover:text-white underline">מדיניות פרטיות</a>
               <span className="mx-2">•</span>

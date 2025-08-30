@@ -194,7 +194,7 @@ privacyRoutes.get('/export-data', async (c) => {
 privacyRoutes.get('/policy', async (c) => {
   const policyContent = {
     title: 'מדיניות פרטיות - מתכנן הארוחות המשפחתי',
-    lastUpdated: '2024-01-01',
+    lastUpdated: '2025-08-30',
     version: '1.0',
     
     sections: {
@@ -292,7 +292,7 @@ privacyRoutes.get('/policy', async (c) => {
           'לשאלות או בעיות: השתמש בטופס הפידבק באפליקציה',
           'מדיניות זו עשויה להתעדכן - תודיע על שינויים מהותיים',
           'גרסה נוכחית: 1.0',
-          'תאריך עדכון אחרון: 01/01/2024'
+          'תאריך עדכון אחרון: 30/08/2025'
         ]
       }
     }

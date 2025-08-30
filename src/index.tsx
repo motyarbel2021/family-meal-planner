@@ -5,7 +5,7 @@ import { renderer } from './renderer'
 import { childrenRoutes } from './routes/children'
 import { menuItemsRoutes } from './routes/menu-items'
 import { weekPlanRoutes } from './routes/week-plan'
-import { groceryRoutes } from './routes/grocery'
+import groceryListRoutes from './routes/grocery-list'
 import { chatRoutes } from './routes/chat'
 import { privacyRoutes } from './routes/privacy'
 import type { Bindings } from './types'
@@ -29,7 +29,7 @@ app.use(renderer)
 app.route('/api/children', childrenRoutes)
 app.route('/api/menu-items', menuItemsRoutes)  
 app.route('/api/week-plan', weekPlanRoutes)
-app.route('/api/grocery', groceryRoutes)
+app.route('/api/grocery-list', groceryListRoutes)
 app.route('/api/chat', chatRoutes)
 app.route('/api/privacy', privacyRoutes)
 
