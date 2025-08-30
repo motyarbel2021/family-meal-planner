@@ -32,14 +32,20 @@ class MealPlannerApp {
       const response = await axios.get('/api/privacy/consent')
       if (response.data.success) {
         this.hasConsent = response.data.data.hasConsented
-        if (!this.hasConsent) {
-          this.renderPrivacyConsent()
-          return
+        // Always allow access - privacy consent is optional
+        this.hasConsent = true
+        
+        // Show privacy notice only on first visit
+        const hasSeenNotice = localStorage.getItem('hasSeenPrivacyNotice')
+        if (!hasSeenNotice) {
+          this.showPrivacyNotice()
+          localStorage.setItem('hasSeenPrivacyNotice', 'true')
         }
       }
     } catch (error) {
       console.error('שגיאה בבדיקת הסכמת פרטיות:', error)
-      this.showError('שגיאה בטעינת הגדרות הפרטיות')
+      // Continue anyway - privacy is not blocking
+      this.hasConsent = true
     }
   }
 
@@ -251,6 +257,11 @@ class MealPlannerApp {
   }
 
   bindEvents() {
+    // Navigation
+    document.getElementById('home-btn')?.addEventListener('click', () => {
+      window.location.href = '/'
+    })
+    
     // Action buttons
     document.getElementById('btn-add-child')?.addEventListener('click', () => this.showAddChildModal())
     document.getElementById('btn-add-meal')?.addEventListener('click', () => this.showAddMealModal())
@@ -353,91 +364,40 @@ class MealPlannerApp {
     this.showMessage(message, 'success')
   }
 
-  // Privacy consent methods
-  renderPrivacyConsent() {
-    const appContainer = document.getElementById('app')
-    if (!appContainer) return
-
-    appContainer.innerHTML = `
-      <div class="max-w-4xl mx-auto">
-        <div class="card">
-          <div class="text-center mb-6">
-            <i class="fas fa-shield-alt text-4xl text-blue-600 mb-4"></i>
-            <h2 class="text-2xl font-bold">ברוכים הבאים למתכנן הארוחות המשפחתי</h2>
-            <p class="text-gray-600 mt-2">לפני שנתחיל, חשוב לנו שתדע כיצד אנו שומרים על הפרטיות שלך</p>
-          </div>
-
-          <div class="bg-blue-50 p-4 rounded-lg mb-6">
-            <h3 class="font-bold mb-3"><i class="fas fa-info-circle ml-2"></i>תקציר מהיר (TL;DR)</h3>
-            <ul class="text-sm space-y-2">
-              <li>• <strong>אין חשבון, אין ענן</strong> - הכל נשמר במכשיר שלך בלבד</li>
-              <li>• <strong>מינימום נתונים</strong> - רק מה שנחוץ לתכנון ארוחות</li>  
-              <li>• <strong>שליטה מלאה</strong> - אפשר למחוק הכל בכל רגע</li>
-              <li>• <strong>אין שיתוף</strong> - הנתונים לא עוזבים את המכשיר</li>
-            </ul>
-          </div>
-
-          <div class="text-center">
-            <div class="flex items-center justify-center mb-4">
-              <input type="checkbox" id="privacy-consent" class="ml-3">
-              <label for="privacy-consent" class="text-sm">
-                קראתי והבנתי את עקרונות הפרטיות. אני מסכים/ה להתחיל להשתמש באפליקציה
-              </label>
-            </div>
-            
-            <div class="space-x-reverse space-x-4">
-              <button id="btn-accept-privacy" class="btn btn-primary" disabled>
-                <i class="fas fa-check ml-2"></i>
-                מסכים ומתחיל
-              </button>
-              <a href="/privacy" class="btn btn-secondary">
-                <i class="fas fa-scroll ml-2"></i>
-                קרא מדיניות מלאה
-              </a>
-            </div>
-          </div>
+  // Privacy notice (non-blocking)
+  showPrivacyNotice() {
+    // Show a simple banner instead of blocking the whole app
+    const banner = document.createElement('div')
+    banner.id = 'privacy-banner'
+    banner.className = 'fixed bottom-0 left-0 right-0 bg-blue-600 text-white p-4 z-50 transform transition-transform duration-300'
+    banner.innerHTML = `
+      <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <div class="flex items-center">
+          <i class="fas fa-shield-alt ml-3"></i>
+          <span class="text-sm">
+            האפליקציה שומרת על הפרטיות שלך - כל הנתונים נשמרים במכשיר בלבד.
+          </span>
+        </div>
+        <div class="flex items-center space-x-reverse space-x-3">
+          <a href="/privacy" class="text-white underline text-sm hover:text-blue-200">פרטים</a>
+          <button onclick="app.dismissPrivacyBanner()" class="text-white hover:text-blue-200">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
     `
-
-    // Bind privacy consent events
-    const checkbox = document.getElementById('privacy-consent')
-    const acceptBtn = document.getElementById('btn-accept-privacy')
     
-    checkbox?.addEventListener('change', () => {
-      acceptBtn.disabled = !checkbox.checked
-    })
-
-    acceptBtn?.addEventListener('click', async () => {
-      if (checkbox?.checked) {
-        await this.acceptPrivacyConsent()
-      }
-    })
+    document.body.appendChild(banner)
+    
+    // Auto dismiss after 8 seconds
+    setTimeout(() => this.dismissPrivacyBanner(), 8000)
   }
 
-  async acceptPrivacyConsent() {
-    try {
-      this.showLoading(true)
-      
-      const response = await axios.post('/api/privacy/consent', {
-        hasConsented: true,
-        version: '1.0'
-      })
-
-      if (response.data.success) {
-        this.hasConsent = true
-        await this.loadInitialData()
-        this.renderMainInterface()
-        this.bindEvents()
-        this.showSuccess('ברוכים הבאים! אפשר להתחיל בתכנון')
-      } else {
-        this.showError('שגיאה ברישום ההסכמה')
-      }
-    } catch (error) {
-      console.error('שגיאה בהסכמת פרטיות:', error)
-      this.showError('שגיאה ברישום ההסכמה')
-    } finally {
-      this.showLoading(false)
+  dismissPrivacyBanner() {
+    const banner = document.getElementById('privacy-banner')
+    if (banner) {
+      banner.classList.add('translate-y-full')
+      setTimeout(() => banner.remove(), 300)
     }
   }
 

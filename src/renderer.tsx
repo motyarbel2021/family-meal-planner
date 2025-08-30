@@ -83,11 +83,11 @@ export const renderer = jsxRenderer(({ children }) => {
                 <span className="text-xl font-bold text-gray-800">מתכנן הארוחות</span>
               </div>
               <div className="flex items-center space-x-reverse space-x-4">
-                <a href="/" className="text-gray-600 hover:text-blue-600">
+                <button id="home-btn" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer bg-transparent border-0">
                   <i className="fas fa-home ml-1"></i>
                   בית
-                </a>
-                <a href="/privacy" className="text-gray-600 hover:text-blue-600">
+                </button>
+                <a href="/privacy" className="text-gray-600 hover:text-blue-600 transition-colors">
                   <i className="fas fa-shield-alt ml-1"></i>  
                   פרטיות
                 </a>
@@ -102,9 +102,11 @@ export const renderer = jsxRenderer(({ children }) => {
         
         <footer className="bg-gray-800 text-white text-center py-4 mt-8">
           <div className="container mx-auto px-4">
-            <p>&copy; 2024 מתכנן הארוחות המשפחתי - שמירה על פרטיותכם היא עדיפותנו</p>
+            <p>&copy; 2024 מתכנן הארוחות המשפחתי</p>
             <p className="text-sm text-gray-400 mt-1">
-              <a href="/privacy" className="hover:text-white">מדיניות פרטיות</a>
+              <a href="/privacy" className="hover:text-white underline">מדיניות פרטיות</a>
+              <span className="mx-2">•</span>
+              <span>כל הנתונים נשמרים במכשיר שלך בלבד</span>
             </p>
           </div>
         </footer>
