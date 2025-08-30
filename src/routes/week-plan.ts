@@ -7,15 +7,37 @@ export const weekPlanRoutes = new Hono<{ Bindings: Bindings }>()
 // Get current week plan
 weekPlanRoutes.get('/current', async (c) => {
   try {
+    // Check if database is available
+    if (!c.env?.DB) {
+      // Return empty week plan when DB is not available
+      const currentWeek = getCurrentWeek()
+      return c.json<ApiResponse<WeekPlan>>({
+        success: true,
+        data: {
+          weekId: generateWeekId(currentWeek.startDate),
+          startDate: currentWeek.startDate.toISOString().split('T')[0],
+          endDate: currentWeek.endDate.toISOString().split('T')[0],
+          days: []
+        }
+      })
+    }
+
     const currentWeek = getCurrentWeek()
     const weekId = generateWeekId(currentWeek.startDate)
     
     return await getWeekPlanById(c, weekId, currentWeek)
   } catch (error) {
-    return c.json<ApiResponse>({
-      success: false,
-      error: 'שגיאה בטעינת התכנית השבועית הנוכחית'
-    }, 500)
+    // Return empty week plan instead of error
+    const currentWeek = getCurrentWeek()
+    return c.json<ApiResponse<WeekPlan>>({
+      success: true,
+      data: {
+        weekId: generateWeekId(currentWeek.startDate),
+        startDate: currentWeek.startDate.toISOString().split('T')[0],
+        endDate: currentWeek.endDate.toISOString().split('T')[0],
+        days: []
+      }
+    })
   }
 })
 

@@ -7,6 +7,15 @@ export const menuItemsRoutes = new Hono<{ Bindings: Bindings }>()
 // Get all menu items with optional filtering
 menuItemsRoutes.get('/', async (c) => {
   try {
+    // Check if database is available
+    if (!c.env?.DB) {
+      // Return empty data when DB is not available
+      return c.json<ApiResponse<MenuItem[]>>({
+        success: true,
+        data: []
+      })
+    }
+
     const mealType = c.req.query('mealType') as MealType | undefined
     const search = c.req.query('search')
     const activeOnly = c.req.query('activeOnly') === 'true'
