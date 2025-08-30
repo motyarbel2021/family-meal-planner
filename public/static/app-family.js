@@ -363,7 +363,7 @@ function updateChildrenList(children) {
         <button onclick="manageChildPreferences('${child.id}')" class="text-blue-500 hover:text-blue-700 text-sm">
           <i class="fas fa-heart"></i>
         </button>
-        <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700">
+        <button onclick="removeChild('${child.id}')" class="text-red-500 hover:text-red-700" title="מחק ילד">
           <i class="fas fa-trash"></i>
         </button>
       </div>
@@ -582,18 +582,99 @@ function addMenuItem(event) {
 
 // Remove child
 function removeChild(id) {
-  let children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
-  children = children.filter(child => child.id !== id)
-  localStorage.setItem('mealPlannerChildren', JSON.stringify(children))
-  refreshAllDisplays() // This will recreate the table without removed child
+  console.log('🗑️ removeChild called with id:', id)
+  
+  const children = JSON.parse(localStorage.getItem('mealPlannerChildren') || '[]')
+  console.log('👥 Current children:', children)
+  
+  const child = children.find(c => c.id === id)
+  
+  if (!child) {
+    console.error('❌ Child not found for id:', id)
+    alert('לא נמצא ילד למחיקה')
+    return
+  }
+  
+  console.log('👶 Found child to delete:', child)
+  
+  // Ask for confirmation
+  if (!confirm(`האם אתה בטוח שברצונך למחוק את ${child.name} מהמערכת?\n\nזה גם ימחק את כל הארוחות המתוכננות עבורו.`)) {
+    console.log('🚫 User cancelled deletion')
+    return
+  }
+  
+  // Remove child from children list
+  const updatedChildren = children.filter(child => child.id !== id)
+  localStorage.setItem('mealPlannerChildren', JSON.stringify(updatedChildren))
+  
+  // Remove all meals for this child from all weeks
+  const weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  let menusUpdated = false
+  
+  Object.keys(weeklyMenus).forEach(weekKey => {
+    const weekMenu = weeklyMenus[weekKey]
+    Object.keys(weekMenu).forEach(mealKey => {
+      if (mealKey.endsWith(`_${id}`)) {
+        delete weekMenu[mealKey]
+        menusUpdated = true
+      }
+    })
+  })
+  
+  if (menusUpdated) {
+    localStorage.setItem('mealPlannerWeeklyMenus', JSON.stringify(weeklyMenus))
+  }
+  
+  // Refresh all displays
+  refreshAllDisplays()
+  
+  console.log('✅ Child deletion completed successfully')
+  alert(`${child.name} נמחק מהמערכת בהצלחה`)
 }
 
 // Remove menu item
 function removeMenuItem(id) {
-  let menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
-  menuItems = menuItems.filter(item => item.id !== id)
-  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(menuItems))
-  updateMenuList(menuItems)
+  const menuItems = JSON.parse(localStorage.getItem('mealPlannerMenuItems') || '[]')
+  const item = menuItems.find(m => m.id === id)
+  
+  if (!item) {
+    alert('לא נמצאה מנה למחיקה')
+    return
+  }
+  
+  // Ask for confirmation
+  if (!confirm(`האם אתה בטוח שברצונך למחוק את המנה "${item.name}"?\n\nזה גם ימחק אותה מכל התכניות השבועיות.`)) {
+    return
+  }
+  
+  // Remove menu item
+  const updatedMenuItems = menuItems.filter(item => item.id !== id)
+  localStorage.setItem('mealPlannerMenuItems', JSON.stringify(updatedMenuItems))
+  
+  // Remove this meal from all weekly plans
+  const weeklyMenus = JSON.parse(localStorage.getItem('mealPlannerWeeklyMenus') || '{}')
+  let menusUpdated = false
+  
+  Object.keys(weeklyMenus).forEach(weekKey => {
+    const weekMenu = weeklyMenus[weekKey]
+    Object.keys(weekMenu).forEach(mealKey => {
+      if (weekMenu[mealKey].mealId === id) {
+        delete weekMenu[mealKey]
+        menusUpdated = true
+      }
+    })
+  })
+  
+  if (menusUpdated) {
+    localStorage.setItem('mealPlannerWeeklyMenus', JSON.stringify(weeklyMenus))
+  }
+  
+  // Update displays
+  updateMenuList(updatedMenuItems)
+  loadWeeklyPlan() // Refresh the weekly table
+  updateWeekSummary()
+  
+  alert(`המנה "${item.name}" נמחקה בהצלחה`)
 }
 
 // Add meal for specific child
